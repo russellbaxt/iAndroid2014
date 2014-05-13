@@ -1,12 +1,11 @@
 package org.wintrisstech.erik.iaroc;
 
 /**************************************************************************
- * Happy version...ultrasonics working...Version 140511A...mods by Vic
+ * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
-
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 import org.wintrisstech.sensors.UltraSonicSensors;
