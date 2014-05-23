@@ -1,4 +1,4 @@
-package org.wintrisstech.sensors;
+package org.wintrisstech.erik.iaroc;
 
 /**************************************************************************
  * Simplified version 140512A by Erik  Super Happy Version
@@ -57,8 +57,8 @@ public class UltraSonicSensors
 	public void read() throws ConnectionLostException, InterruptedException
 	{
 		leftDistance = read(leftStrobe, LEFT_ULTRASONIC_INPUT_PIN);
-		frontDistance = read(frontStrobe, FRONT_ULTRASONIC_INPUT_PIN);
-		rightDistance = read(rightStrobe, RIGHT_ULTRASONIC_INPUT_PIN);
+//		frontDistance = read(frontStrobe, FRONT_ULTRASONIC_INPUT_PIN);
+//		rightDistance = read(rightStrobe, RIGHT_ULTRASONIC_INPUT_PIN);
 	}
 
 	private int read(DigitalOutput strobe, int inputPin) throws ConnectionLostException, InterruptedException
@@ -67,11 +67,11 @@ public class UltraSonicSensors
 		strobe.write(true);
 		PulseInput input = ioio.openPulseInput(inputPin, PulseMode.POSITIVE);
 		ioio.endBatch();
-		SystemClock.sleep(20);
+		SystemClock.sleep(40);
 		strobe.write(false);
-		int distance = (int) (input.getDuration() * CONVERSION_FACTOR);
+		//int distance = (int) (input.getDuration() * CONVERSION_FACTOR);
 		input.close();
-		return distance;
+		return 4;//distance;
 	}
 
 	public int getLeftDistance()

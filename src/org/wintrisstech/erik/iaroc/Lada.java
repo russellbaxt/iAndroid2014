@@ -6,23 +6,24 @@ package org.wintrisstech.erik.iaroc;
  **************************************************************************/
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
+
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
-import org.wintrisstech.sensors.UltraSonicSensors;
 
 import android.os.SystemClock;
 
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
  * awesome API. It is entirely event driven.
- * @author Erik
- * Simplified version 140512A by Erik  Super Happy Version
+ * 
+ * @author Erik Simplified "API" class by Phil version 140523A
  */
 public class Lada extends IRobotCreateAdapter {
 	private final Dashboard dashboard;
 	public UltraSonicSensors sonar;
-	private boolean firstPass = true;;
+	private boolean firstPass = true;
 	private int commandAzimuth;
+	private Robot myRobot;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -44,27 +45,40 @@ public class Lada extends IRobotCreateAdapter {
 	}
 
 	public void initialize() throws ConnectionLostException {
-		dashboard.log("iAndroid2014 happy version 140509A");
+		dashboard.log("iAndroid2014 happy version 140523A");
+		myRobot = new Robot(dashboard, this);
+		myRobot.log("Ready!");
+		myRobot.goForward(10);
+		myRobot.log("I'm done.");
 	}
 
 	/**
 	 * This method is called repeatedly
 	 * 
 	 * @throws ConnectionLostException
+	 * @throws InterruptedException
 	 */
-	public void loop() throws ConnectionLostException {
-		
-		SystemClock.sleep(100);
-		dashboard.log(String.valueOf(readCompass()));
+	public void loop() throws ConnectionLostException, InterruptedException {
+
+		SystemClock.sleep(500);
+		sonar.read();
+		dashboard.log(String.valueOf(sonar.getLeftDistance() + "..."
+				+ sonar.getFrontDistance() + "..." + sonar.getRightDistance()));
 	}
 
-	public void turn(int commandAngle) throws ConnectionLostException //Doesn't work for turns through 360
+	public void turn(int commandAngle) throws ConnectionLostException // Doesn't
+																		// work
+																		// for
+																		// turns
+																		// through
+																		// 360
 	{
 		int startAzimuth = 0;
 		if (firstPass) {
 			startAzimuth += readCompass();
 			commandAzimuth = (startAzimuth + commandAngle) % 360;
-			dashboard.log("commandaz = " + commandAzimuth + " startaz = " + startAzimuth);
+			dashboard.log("commandaz = " + commandAzimuth + " startaz = "
+					+ startAzimuth);
 			firstPass = false;
 		}
 		int currentAzimuth = readCompass();
