@@ -23,6 +23,7 @@ public class Lada extends IRobotCreateAdapter {
 	public UltraSonicSensors sonar;
 	private boolean firstPass = true;;
 	private int commandAzimuth;
+	private Robot myRobot; 
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -44,7 +45,12 @@ public class Lada extends IRobotCreateAdapter {
 	}
 
 	public void initialize() throws ConnectionLostException {
-		dashboard.log("iAndroid2014 happy version 140509A");
+	
+		myRobot = new Robot(dashboard, this);
+		myRobot.log("iAndroid2014 version 0.0.1");
+		myRobot.log("Ready!");
+		myRobot.goForward(10);
+		myRobot.log("I'm done.");
 	}
 
 	/**
@@ -54,8 +60,8 @@ public class Lada extends IRobotCreateAdapter {
 	 */
 	public void loop() throws ConnectionLostException {
 		
-		SystemClock.sleep(100);
-		dashboard.log(String.valueOf(readCompass()));
+		//SystemClock.sleep(100);
+		//dashboard.log(String.valueOf(readCompass()));
 	}
 
 	public void turn(int commandAngle) throws ConnectionLostException //Doesn't work for turns through 360
