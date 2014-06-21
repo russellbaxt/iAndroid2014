@@ -18,7 +18,8 @@ import android.os.SystemClock;
  * 
  * @author Erik Simplified "API" class by Phil version 140523A
  */
-public class Lada extends IRobotCreateAdapter {
+public class Lada extends IRobotCreateAdapter
+{
 	private final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private boolean firstPass = true;
@@ -38,18 +39,21 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws ConnectionLostException
 	 */
 	public Lada(IOIO ioio, IRobotCreateInterface create, Dashboard dashboard)
-			throws ConnectionLostException {
+			throws ConnectionLostException
+	{
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
 	}
 
-	public void initialize() throws ConnectionLostException {
+	public void initialize() throws ConnectionLostException
+	{
 		dashboard.log("iAndroid2014 happy version 140523A");
 		myRobot = new Robot(dashboard, this);
 		myRobot.log("Ready!");
 		myRobot.goForward(10);
 		myRobot.log("I'm done.");
+		turnRight();		
 	}
 
 	/**
@@ -58,39 +62,47 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws ConnectionLostException
 	 * @throws InterruptedException
 	 */
-	public void loop() throws ConnectionLostException, InterruptedException {
-
-		SystemClock.sleep(500);
-		sonar.read();
-		dashboard.log(String.valueOf(sonar.getLeftDistance() + "..."
-				+ sonar.getFrontDistance() + "..." + sonar.getRightDistance()));
-	}
-
-	public void turn(int commandAngle) throws ConnectionLostException // Doesn't
-																		// work
-																		// for
-																		// turns
-																		// through
-																		// 360
+	public void loop() throws ConnectionLostException, InterruptedException
 	{
-		int startAzimuth = 0;
-		if (firstPass) {
-			startAzimuth += readCompass();
-			commandAzimuth = (startAzimuth + commandAngle) % 360;
-			dashboard.log("commandaz = " + commandAzimuth + " startaz = "
-					+ startAzimuth);
-			firstPass = false;
-		}
-		int currentAzimuth = readCompass();
-		dashboard.log("now = " + currentAzimuth);
-		if (currentAzimuth >= commandAzimuth) {
-			driveDirect(0, 0);
-			firstPass = true;
-			dashboard.log("finalaz = " + readCompass());
-		}
+
+//		SystemClock.sleep(500);
+//		sonar.read();
+//		dashboard.log(String.valueOf(sonar.getLeftDistance() + "..."
+//				+ sonar.getFrontDistance() + "..." + sonar.getRightDistance()));
 	}
 
-	public int readCompass() {
+	public void turn(int commandAngle) throws ConnectionLostException 
+	{
+		// int startAzimuth = 0;
+		// if (firstPass)
+		// {
+		// startAzimuth += readCompass();
+		// commandAzimuth = (startAzimuth + commandAngle) % 360;
+		// dashboard.log("commandaz = " + commandAzimuth + " startaz = "
+		// + startAzimuth);
+		// firstPass = false;
+		// }
+		// int currentAzimuth = readCompass();
+		// dashboard.log("now = " + currentAzimuth);
+		// if (currentAzimuth >= commandAzimuth)
+		// {
+		// driveDirect(0, 0);
+		// firstPass = true;
+		// dashboard.log("finalaz = " + readCompass());
+		// }
+	}
+
+	public void turnRight() throws ConnectionLostException
+	{
+		int ls = 220;
+		int rs = -ls;
+		driveDirect(rs, ls);
+		SystemClock.sleep(1000);
+		driveDirect(0, 0);
+	}
+
+	public int readCompass()
+	{
 		return (int) (dashboard.getAzimuth() + 360) % 360;
 	}
 }
