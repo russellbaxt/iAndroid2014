@@ -23,11 +23,12 @@ public class Lada extends IRobotCreateAdapter
 {
 	private static final int DEGREE_ANGLE = 11;
 	private static final int BLOCK = 60;
+	private static final int SLIDY = 5;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private Robot myRobot;
 	public static Lada instance;
-	public static int startAz;
+	public static int preferedAz;
 	public int x = 0;
 	public int y = 4;
 	public int dx = 1;
@@ -58,7 +59,7 @@ public class Lada extends IRobotCreateAdapter
 	public void initialize() throws ConnectionLostException,
 			InterruptedException
 	{
-			
+		preferedAz = (int) getAngle();
 	}
 
 	private void solveMaze()
@@ -166,6 +167,7 @@ public class Lada extends IRobotCreateAdapter
 			dy = 1;
 		}
 		dashboard.log("right");
+		preferedAz += 90;
 	}
 
 	public void turnLeft() throws ConnectionLostException
@@ -188,7 +190,8 @@ public class Lada extends IRobotCreateAdapter
 			dx = 0;
 			dy = -1;
 		}
-		dashboard.log("right");
+		dashboard.log("left");
+		preferedAz -= 90;
 	}
 
 	public boolean isWallFront() throws ConnectionLostException,
@@ -232,7 +235,13 @@ public class Lada extends IRobotCreateAdapter
 
 	public void straighten() throws ConnectionLostException
 	{
-		
+		if (getAngle() < preferedAz - SLIDY){
+			dx--;
+			dy++;
+		} else if (getAngle() > preferedAz + SLIDY){
+			dy--;
+			dx++;
+		}
 	}
 
 	private void stop() throws ConnectionLostException
