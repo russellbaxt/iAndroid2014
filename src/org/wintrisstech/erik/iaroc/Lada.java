@@ -28,7 +28,7 @@ import android.widget.Button;
  */
 public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int DEGREE_ANGLE = 11;
-	private static final int BLOCK = 73;
+	private static final int BLOCK = 70;
 	private static final int SLIDY = 5;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
@@ -38,10 +38,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public int y = 4;
 	public int dx = 1;
 	public int dy = 0;
-	public int[][] mapintYX = new int[9][15];
+	public int[][] mapintYX = new int[9][29];
 	public Button leftMap;
 	public Button rightMap;
 	public Button solveMap;
+	private int correctAz;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -60,7 +61,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
-//		sayTheName();
+		sayTheName();
 		leftMap = (Button) this.dashboard.findViewById(R.id.leftHand);
 		leftMap.setOnClickListener(new OnClickListener(){
 
@@ -138,21 +139,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		while (!done) {
 			mapintYX[y][x] += 1;
 			sonar.read();
-			if(deadEnd()){
-				if(Math.abs(sonar.getLeftDistance()-sonar.getRightDistance()) > SLIDY){
-					if(sonar.getLeftDistance() > sonar.getRightDistance()){
-						turnLeft();
-						myRobot.goForward((sonar.getLeftDistance()-sonar.getRightDistance())/2);
-						turnRight();
-						moveFrontBack();
-					} else {
-						turnRight();
-						myRobot.goForward((sonar.getRightDistance()-sonar.getLeftDistance())/2);
-						turnLeft();
-						moveFrontBack();
-					}
-				}
-			}
+			straighten();
 			sonar.read();
 			if (!isWallLeft()){
 				turnLeft();
@@ -171,27 +158,34 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 		}
 	}
+
+	private void straighten() throws ConnectionLostException {
+		if(deadEnd()){
+			if(Math.abs(sonar.getLeftDistance()-sonar.getRightDistance()) > SLIDY){
+				if(sonar.getLeftDistance() > sonar.getRightDistance()){
+					turnLeft();
+					myRobot.goForward((sonar.getLeftDistance()-sonar.getRightDistance())/2);
+					turnRight();
+					moveFrontBack();
+				} else {
+					turnRight();
+					myRobot.goForward((sonar.getRightDistance()-sonar.getLeftDistance())/2);
+					turnLeft();
+					moveFrontBack();
+				}
+			}
+			correctAz = getAngle();
+		} else {
+			turn((getAngle()%90)-correctAz);
+		}
+	}
 	
 	public void mapMazeRight() throws ConnectionLostException, InterruptedException {
 		boolean done = false;
 		while (!done) {
 			mapintYX[y][x] += 1;
 			sonar.read();
-			if(deadEnd()){
-				if(Math.abs(sonar.getLeftDistance()-sonar.getRightDistance()) > SLIDY){
-					if(sonar.getLeftDistance() > sonar.getRightDistance()){
-						turnLeft();
-						myRobot.goForward((sonar.getLeftDistance()-sonar.getRightDistance())/2);
-						turnRight();
-						moveFrontBack();
-					} else {
-						turnRight();
-						myRobot.goForward((sonar.getRightDistance()-sonar.getLeftDistance())/2);
-						turnLeft();
-						moveFrontBack();
-					}
-				}
-			}
+			straighten();
 			sonar.read();
 			if (!isWallRight()){
 				turnRight();
