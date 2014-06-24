@@ -20,13 +20,9 @@ import android.os.SystemClock;
  */
 public class Lada extends IRobotCreateAdapter
 {
-	private static final int SLIDY = 5;
-	private static final int DEGREE_ANGLE = 11;
 	private static final int BLOCK = 60;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
-	private boolean firstPass = true;
-	private int commandAzimuth;
 	private Robot myRobot;
 	public static Lada instance;
 	public int x = 0;
@@ -56,7 +52,6 @@ public class Lada extends IRobotCreateAdapter
 
 	public void initialize() throws ConnectionLostException
 	{
-		mapMaze();
 	}
 
 	public void mapMaze() throws ConnectionLostException
@@ -77,7 +72,7 @@ public class Lada extends IRobotCreateAdapter
 	 */
 	public void loop() throws ConnectionLostException, InterruptedException
 	{
-
+		isWallFront();
 	}
 
 	public void turnRight() throws ConnectionLostException
@@ -98,9 +93,12 @@ public class Lada extends IRobotCreateAdapter
 		driveDirect(0, 0);
 	}
 
-	public void isWallFront()
+	public void isWallFront() throws ConnectionLostException,
+			InterruptedException
 	{
-
+		sonar.read();
+		dashboard.log(String.valueOf(sonar.getFrontDistance()) + "..." + String.valueOf(sonar.getRightDistance())  + "..." +  String.valueOf(sonar.getLeftDistance()));
+		SystemClock.sleep(250);
 	}
 
 	public int readCompass()
