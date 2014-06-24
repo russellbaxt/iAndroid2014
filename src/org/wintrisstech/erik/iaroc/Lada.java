@@ -19,6 +19,11 @@ import android.os.SystemClock;
  * @author Erik Simplified "API" class by Phil version 140523A
  */
 public class Lada extends IRobotCreateAdapter {
+<<<<<<< master
+=======
+	private static final int SLIDY = 5;
+	private static final int DEGREE_ANGLE = 11;
+>>>>>>> de90449 First version of maze mapper
 	private static final int BLOCK = 60;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
@@ -52,6 +57,14 @@ public class Lada extends IRobotCreateAdapter {
 
 	public void initialize() throws ConnectionLostException,
 			InterruptedException {
+<<<<<<< master
+=======
+		dashboard.log("iAndroid2014 happy version 140523A");
+		myRobot = new Robot(dashboard, this);
+		Lada.instance = this;
+		myRobot.log("Ready!");
+		mapMaze();
+>>>>>>> de90449 First version of maze mapper
 		solveMaze();
 	}
 
@@ -66,12 +79,40 @@ public class Lada extends IRobotCreateAdapter {
 		}
 	}
 
+<<<<<<< master
 	public void mapMaze() throws ConnectionLostException
 	{
 		boolean done = false;
 		while (!done)
 		{
 
+=======
+	private String map() {
+		StringBuilder sb = new StringBuilder();
+		for(int i = 0; i < mapintYX.length; i++){
+			for(int j = 0; j < mapintYX[i].length; j++){
+				sb.append(mapintYX[i][j]);
+			}
+		}
+		return sb.toString();
+	}
+
+	public void mapMaze() throws ConnectionLostException, InterruptedException {
+		boolean done = false;
+		while (!done) {
+			mapintYX[y][x] += 1;
+			sonar.read();
+			if (!isWallLeft()){
+				turnLeft();
+			} else if (isWallFront()){
+				turnRight();
+				if(isWallRight()){
+					turnRight();
+				}
+			}
+			x += dx;
+			y += dy;
+>>>>>>> de90449 First version of maze mapper
 			myRobot.goForward(BLOCK);
 			if (atEnd()) {
 				mapintYX[y][x] += 1;
@@ -93,9 +134,27 @@ public class Lada extends IRobotCreateAdapter {
 	 * @throws InterruptedException
 	 */
 	public void loop() throws ConnectionLostException, InterruptedException {
+<<<<<<< master
 		isWallFront();
+=======
+
+		// SystemClock.sleep(500);
+		// sonar.read();
+		// dashboard.log(String.valueOf(sonar.getLeftDistance() + "..."
+		// + sonar.getFrontDistance() + "..." + sonar.getRightDistance()));
 	}
 
+	public void turn(int commandAngle) throws ConnectionLostException {
+		int ls = 230;
+		int rs = -ls;
+		driveDirect(rs, ls);
+		SystemClock.sleep(DEGREE_ANGLE * commandAngle);
+		driveDirect(0, 0);
+
+>>>>>>> de90449 First version of maze mapper
+	}
+
+<<<<<<< master
 	public void turnRight() throws ConnectionLostException
 	{
 		int ls = 230;
@@ -103,8 +162,27 @@ public class Lada extends IRobotCreateAdapter {
 		driveDirect(rs, ls);
 		SystemClock.sleep(1000);
 		driveDirect(0, 0);
+=======
+	public void turnRight() throws ConnectionLostException {
+		turn(90);
+		if (dx == 0 && dy == 1) {
+			dx = 1;
+			dy = 0;
+		} else if (dx == 0 && dy == -1) {
+			dx = -1;
+			dy = 0;
+		} else if (dx == 1 && dy == 0) {
+			dx = 0;
+			dy = -1;
+		} else {
+			dx = 0;
+			dy = 1;
+		}
+		dashboard.log("right");
+>>>>>>> de90449 First version of maze mapper
 	}
 
+<<<<<<< master
 	public void turnLeft() throws ConnectionLostException
 	{
 		int rs = 230;
@@ -126,8 +204,31 @@ public class Lada extends IRobotCreateAdapter {
 			dy = 1;
 		}
 		dashboard.log("right");
+=======
+	public void turnLeft() throws ConnectionLostException {
+		turn(270);
+		if (dx == 0 && dy == 1) {
+			dx = -1;
+			dy = 0;
+		} else if (dx == 0 && dy == -1) {
+			dx = 1;
+			dy = 0;
+		} else if (dx == 1 && dy == 0) {
+			dx = 0;
+			dy = 1;
+		} else {
+			dx = 0;
+			dy = -1;
+		}
+		dashboard.log("right");
 	}
 
+	public boolean isWallFront() {
+		return sonar.getFrontDistance() < BLOCK;
+>>>>>>> de90449 First version of maze mapper
+	}
+
+<<<<<<< master
 	public void isWallFront() throws ConnectionLostException,
 			InterruptedException
 	{
@@ -136,6 +237,15 @@ public class Lada extends IRobotCreateAdapter {
 		SystemClock.sleep(250);
 	}
 
+=======
+	public boolean isWallLeft() {
+		return sonar.getLeftDistance() < BLOCK;
+	}
+
+	public boolean isWallRight() {
+		return sonar.getRightDistance() < BLOCK;
+	}
+>>>>>>> de90449 First version of maze mapper
 
 	public int readCompass() {
 		return (int) (dashboard.getAzimuth() + 360) % 360;
