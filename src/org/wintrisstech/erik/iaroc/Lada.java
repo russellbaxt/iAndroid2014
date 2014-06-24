@@ -20,6 +20,7 @@ import android.os.SystemClock;
  */
 public class Lada extends IRobotCreateAdapter
 {
+	private static final int SLIDY = 5;
 	private final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private boolean firstPass = true;
@@ -48,12 +49,12 @@ public class Lada extends IRobotCreateAdapter
 
 	public void initialize() throws ConnectionLostException
 	{
-		dashboard.log("iAndroid2014 happy version 140523A");
-		myRobot = new Robot(dashboard, this);
-		myRobot.log("Ready!");
-		myRobot.goForward(10);
-		myRobot.log("I'm done.");
-		turnRight();		
+//		dashboard.log("iAndroid2014 happy version 140523A");
+//		myRobot = new Robot(dashboard, this);
+//		myRobot.log("Ready!");
+//		myRobot.goForward(10);
+//		myRobot.log("I'm done.");
+		turnLeft();
 	}
 
 	/**
@@ -90,15 +91,30 @@ public class Lada extends IRobotCreateAdapter
 		// firstPass = true;
 		// dashboard.log("finalaz = " + readCompass());
 		// }
+
 	}
 
 	public void turnRight() throws ConnectionLostException
 	{
-		int ls = 220;
+		int ls = 230;
 		int rs = -ls;
 		driveDirect(rs, ls);
 		SystemClock.sleep(1000);
 		driveDirect(0, 0);
+	}
+	
+	public void turnLeft() throws ConnectionLostException
+	{
+		int rs = 230;
+		int ls = -rs;
+		driveDirect(rs, ls);
+		SystemClock.sleep(1000);
+		driveDirect(0, 0);
+	}
+	
+	public void isWallFront()
+	{
+		
 	}
 
 	public int readCompass()
