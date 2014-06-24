@@ -7,6 +7,7 @@ package org.wintrisstech.erik.iaroc;
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
+import java.util.Random;
 
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
@@ -59,7 +60,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
-		sayTheName();
+//		sayTheName();
 		leftMap = (Button) this.dashboard.findViewById(R.id.leftHand);
 		leftMap.setOnClickListener(new OnClickListener(){
 
@@ -67,8 +68,21 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			public void onClick(View arg0) {
 				try {
 					Lada.instance.dashboard.speak("Mapping Left Hand Rule");
-					mapMaze();
+					mapMazeLeft();
 				} catch (ConnectionLostException e) {} catch (InterruptedException e) {}
+			}
+			
+		});
+		rightMap = (Button) this.dashboard.findViewById(R.id.rightHand);
+		rightMap.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				try {
+					mapMazeRight();
+				} catch (ConnectionLostException e) {
+				} catch (InterruptedException e) {
+				}
 			}
 			
 		});
@@ -80,6 +94,14 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		List<String> names = new ArrayList<String>();
 		names.add("The Nerd Herd Robot");
 		names.add("The Hash Tag No Moss Guy");
+		names.add("Miss Moss");
+		names.add("Fox News");
+		names.add("Nyan Cat");
+		names.add("Olaf");
+		Random r = new Random();
+		names.add("Prisoner Number "+Integer.toString(r.nextInt(1000)));
+		String name = names.get(r.nextInt(names.size()));
+		dashboard.speak("My name is "+name);
 	}
 
 	public void initialize() throws ConnectionLostException,
@@ -111,7 +133,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		return sb.toString();
 	}
 
-	public void mapMaze() throws ConnectionLostException, InterruptedException {
+	public void mapMazeLeft() throws ConnectionLostException, InterruptedException {
 		boolean done = false;
 		while (!done) {
 			mapintYX[y][x] += 1;
@@ -138,6 +160,45 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				turnRight();
 				if(isWallRight()){
 					turnRight();
+				}
+			}
+			x += dx;
+			y += dy;
+			myRobot.goForward(BLOCK);
+			if (atEnd()) {
+				mapintYX[y][x] += 1;
+				done = false;
+			}
+		}
+	}
+	
+	public void mapMazeRight() throws ConnectionLostException, InterruptedException {
+		boolean done = false;
+		while (!done) {
+			mapintYX[y][x] += 1;
+			sonar.read();
+			if(deadEnd()){
+				if(Math.abs(sonar.getLeftDistance()-sonar.getRightDistance()) > SLIDY){
+					if(sonar.getLeftDistance() > sonar.getRightDistance()){
+						turnLeft();
+						myRobot.goForward((sonar.getLeftDistance()-sonar.getRightDistance())/2);
+						turnRight();
+						moveFrontBack();
+					} else {
+						turnRight();
+						myRobot.goForward((sonar.getRightDistance()-sonar.getLeftDistance())/2);
+						turnLeft();
+						moveFrontBack();
+					}
+				}
+			}
+			sonar.read();
+			if (!isWallRight()){
+				turnRight();
+			} else if (isWallFront()){
+				turnLeft();
+				if(isWallLeft()){
+					turnLeft();
 				}
 			}
 			x += dx;
@@ -179,7 +240,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	public void turn(int commandAngle) throws ConnectionLostException {
-		int ls = commandAngle > 0 ? 230 : -230;
+		int ls = commandAngle > 0 ? 220 : -220;
 		int rs = -ls;
 		driveDirect(rs, ls);
 		SystemClock.sleep(DEGREE_ANGLE * Math.abs(commandAngle));
