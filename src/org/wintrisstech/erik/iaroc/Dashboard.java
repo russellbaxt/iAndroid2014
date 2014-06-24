@@ -264,7 +264,6 @@ public class Dashboard extends IOIOActivity implements
 	 */
 	public void log(final String msg) {
 		runOnUiThread(new Runnable() {
-
 			public void run() {
 				mText.append(msg);
 				mText.append("\n");

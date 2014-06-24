@@ -53,13 +53,12 @@ public class Lada extends IRobotCreateAdapter
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
 		instance = this;
-		startAz = readCompass();
 	}
 
 	public void initialize() throws ConnectionLostException,
 			InterruptedException
 	{
-
+		
 	}
 
 	private void solveMaze()
