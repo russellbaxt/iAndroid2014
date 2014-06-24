@@ -56,17 +56,15 @@ public class Lada extends IRobotCreateAdapter
 
 	public void initialize() throws ConnectionLostException
 	{
-		dashboard.log("iAndroid2014 happy version 140523A");
-		myRobot = new Robot(dashboard, this);
-		Lada.instance = this;
-		myRobot.log("Ready!");
 		mapMaze();
 	}
 
-	public void mapMaze() throws ConnectionLostException {
+	public void mapMaze() throws ConnectionLostException
+	{
 		boolean done = false;
-		while(!done){
-			
+		while (!done)
+		{
+
 			myRobot.goForward(BLOCK);
 		}
 	}
@@ -80,34 +78,31 @@ public class Lada extends IRobotCreateAdapter
 	public void loop() throws ConnectionLostException, InterruptedException
 	{
 
-//		SystemClock.sleep(500);
-//		sonar.read();
-//		dashboard.log(String.valueOf(sonar.getLeftDistance() + "..."
-//				+ sonar.getFrontDistance() + "..." + sonar.getRightDistance()));
-	}
-
-	public void turn(int commandAngle) throws ConnectionLostException 
-	{
-		int ls = 234;
-		int rs = -ls;
-		driveDirect(rs, ls);
-		SystemClock.sleep(DEGREE_ANGLE*commandAngle);
-		driveDirect(0, 0);
-
 	}
 
 	public void turnRight() throws ConnectionLostException
 	{
-		turn(90);
+		int ls = 230;
+		int rs = -ls;
+		driveDirect(rs, ls);
+		SystemClock.sleep(1000);
+		driveDirect(0, 0);
 	}
-	public void turnLeft() throws ConnectionLostException{
-		turn(270);
+
+	public void turnLeft() throws ConnectionLostException
+	{
+		int rs = 230;
+		int ls = -rs;
+		driveDirect(rs, ls);
+		SystemClock.sleep(1000);
+		driveDirect(0, 0);
 	}
-	
+
 	public void isWallFront()
 	{
-		
+
 	}
+
 	public int readCompass()
 	{
 		return (int) (dashboard.getAzimuth() + 360) % 360;
