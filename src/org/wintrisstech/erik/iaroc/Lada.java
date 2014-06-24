@@ -4,6 +4,10 @@ package org.wintrisstech.erik.iaroc;
  * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.List;
+
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
@@ -11,6 +15,9 @@ import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 
 import android.os.SystemClock;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
@@ -18,10 +25,10 @@ import android.os.SystemClock;
  * 
  * @author Erik Simplified "API" class by Phil version 140523A
  */
-public class Lada extends IRobotCreateAdapter {
-	private static final int SLIDY = 5;
+public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int DEGREE_ANGLE = 11;
-	private static final int BLOCK = 60;
+	private static final int BLOCK = 73;
+	private static final int SLIDY = 5;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private Robot myRobot;
@@ -31,6 +38,9 @@ public class Lada extends IRobotCreateAdapter {
 	public int dx = 1;
 	public int dy = 0;
 	public int[][] mapintYX = new int[9][15];
+	public Button leftMap;
+	public Button rightMap;
+	public Button solveMap;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -44,12 +54,32 @@ public class Lada extends IRobotCreateAdapter {
 	 *            the Dashboard instance that is connected to the Lada
 	 * @throws ConnectionLostException
 	 */
-	public Lada(IOIO ioio, IRobotCreateInterface create, Dashboard dashboard)
+	public Lada(IOIO ioio, IRobotCreateInterface create, final Dashboard dashboard)
 			throws ConnectionLostException {
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
+		sayTheName();
+		leftMap = (Button) this.dashboard.findViewById(R.id.leftHand);
+		leftMap.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				try {
+					Lada.instance.dashboard.speak("Mapping Left Hand Rule");
+					mapMaze();
+				} catch (ConnectionLostException e) {} catch (InterruptedException e) {}
+			}
+			
+		});
+		
 		instance = this;
+	}
+
+	private void sayTheName() {
+		List<String> names = new ArrayList<String>();
+		names.add("The Nerd Herd Robot");
+		names.add("The Hash Tag No Moss Guy");
 	}
 
 	public void initialize() throws ConnectionLostException,
@@ -58,11 +88,10 @@ public class Lada extends IRobotCreateAdapter {
 		myRobot = new Robot(dashboard, this);
 		Lada.instance = this;
 		myRobot.log("Ready!");
-		mapMaze();
-		solveMaze();
+		
 	}
 
-	private void solveMaze() {
+	public void solveMaze() {
 		dashboard.log(map());
 		for(int i = 0; i < mapintYX.length; i++){
 			for(int j = 0; j < mapintYX[i].length; j++){
@@ -87,6 +116,22 @@ public class Lada extends IRobotCreateAdapter {
 		while (!done) {
 			mapintYX[y][x] += 1;
 			sonar.read();
+			if(deadEnd()){
+				if(Math.abs(sonar.getLeftDistance()-sonar.getRightDistance()) > SLIDY){
+					if(sonar.getLeftDistance() > sonar.getRightDistance()){
+						turnLeft();
+						myRobot.goForward((sonar.getLeftDistance()-sonar.getRightDistance())/2);
+						turnRight();
+						moveFrontBack();
+					} else {
+						turnRight();
+						myRobot.goForward((sonar.getRightDistance()-sonar.getLeftDistance())/2);
+						turnLeft();
+						moveFrontBack();
+					}
+				}
+			}
+			sonar.read();
 			if (!isWallLeft()){
 				turnLeft();
 			} else if (isWallFront()){
@@ -105,10 +150,22 @@ public class Lada extends IRobotCreateAdapter {
 		}
 	}
 
-	private boolean atEnd() throws ConnectionLostException {
+	private void moveFrontBack() throws ConnectionLostException {
+		if(sonar.getLeftDistance() > sonar.getFrontDistance()){
+			myRobot.goForward(-(sonar.getLeftDistance()-sonar.getFrontDistance()));
+		} else {
+			myRobot.goForward(sonar.getLeftDistance()-sonar.getFrontDistance());
+		}
+	}
+
+	private boolean atEnd() throws ConnectionLostException, InterruptedException {
 		readSensors(SENSORS_INFRARED_BYTE);
-		readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
-		return isHomeBaseChargerAvailable() && isBumpLeft() && isBumpRight();
+		sonar.read();
+		return isHomeBaseChargerAvailable() && deadEnd();
+	}
+
+	private boolean deadEnd() {
+		return isWallLeft() && isWallRight() && isWallFront();
 	}
 
 	/**
@@ -122,10 +179,10 @@ public class Lada extends IRobotCreateAdapter {
 	}
 
 	public void turn(int commandAngle) throws ConnectionLostException {
-		int ls = 230;
+		int ls = commandAngle > 0 ? 230 : -230;
 		int rs = -ls;
 		driveDirect(rs, ls);
-		SystemClock.sleep(DEGREE_ANGLE * commandAngle);
+		SystemClock.sleep(DEGREE_ANGLE * Math.abs(commandAngle));
 		driveDirect(0, 0);
 	}
 	public void turnRight() throws ConnectionLostException {
@@ -146,7 +203,7 @@ public class Lada extends IRobotCreateAdapter {
 		dashboard.log("right");
 	}
 	public void turnLeft() throws ConnectionLostException {
-		turn(270);
+		turn(-90);
 		if (dx == 0 && dy == 1) {
 			dx = -1;
 			dy = 0;
