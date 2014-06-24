@@ -4,6 +4,11 @@ package org.wintrisstech.erik.iaroc;
  * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.List;
+import java.util.Random;
+
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
