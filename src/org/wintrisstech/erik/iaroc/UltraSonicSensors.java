@@ -71,11 +71,7 @@ public class UltraSonicSensors
 		strobe.write(false);
 		int distance = (int) (input.getDuration() * CONVERSION_FACTOR);
 		input.close();
-<<<<<<< HEAD
 		return distance;
-=======
-		return distance;//distance;
->>>>>>> branch 'master' of https://github.com/russellbaxt/iAndroid2014.git
 	}
 
 	public int getLeftDistance()
