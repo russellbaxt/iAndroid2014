@@ -62,19 +62,29 @@ public class Lada extends IRobotCreateAdapter
 		preferedAz = (int) getAngle();
 	}
 
-	private void solveMaze()
+	private void solveMaze() throws ConnectionLostException
 	{
-		dashboard.log(map());
-		for (int i = 0; i < mapintYX.length; i++)
+		boolean done = false;
+		int bestPath;
+		while (!done)
 		{
-			for (int j = 0; j < mapintYX[i].length; j++)
+			bestPath = findBestPath();
+			if (bestPath == mapintYX[y][x + dx])
 			{
-				if (mapintYX[i][j] <= 0)
-				{
-					mapintYX[i][j] = 9;
-				}
+				turnLeft();
 			}
+			else if (bestPath == mapintYX[y + dy][x])
+			{
+				turnRight();
+			}
+			myRobot.goForward(BLOCK);
 		}
+	}
+
+	private int findBestPath()
+	{
+		return Math.min(mapintYX[y + dy][x + dx],
+				Math.min(mapintYX[y + dy][x], mapintYX[y][x + dx]));
 	}
 
 	private String map()
@@ -235,13 +245,7 @@ public class Lada extends IRobotCreateAdapter
 
 	public void straighten() throws ConnectionLostException
 	{
-		if (getAngle() < preferedAz - SLIDY){
-			dx--;
-			dy++;
-		} else if (getAngle() > preferedAz + SLIDY){
-			dy--;
-			dx++;
-		}
+
 	}
 
 	private void stop() throws ConnectionLostException
