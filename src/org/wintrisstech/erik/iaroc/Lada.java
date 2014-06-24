@@ -58,7 +58,7 @@ public class Lada extends IRobotCreateAdapter
 	public void initialize() throws ConnectionLostException,
 			InterruptedException
 	{
-		
+			
 	}
 
 	private void solveMaze()
@@ -191,34 +191,40 @@ public class Lada extends IRobotCreateAdapter
 		dashboard.log("right");
 	}
 
-	public boolean isWallFront() throws ConnectionLostException, InterruptedException
+	public boolean isWallFront() throws ConnectionLostException,
+			InterruptedException
 	{
 		return getWallFront() < BLOCK;
 	}
 
-	public boolean isWallLeft() throws ConnectionLostException, InterruptedException
+	public boolean isWallLeft() throws ConnectionLostException,
+			InterruptedException
 	{
 		return getWallLeft() < BLOCK;
 	}
 
-	public boolean isWallRight() throws ConnectionLostException, InterruptedException
+	public boolean isWallRight() throws ConnectionLostException,
+			InterruptedException
 	{
 		return getWallRight() < BLOCK;
 	}
-	
-	public int getWallFront() throws ConnectionLostException, InterruptedException
+
+	public int getWallFront() throws ConnectionLostException,
+			InterruptedException
 	{
 		sonar.read();
 		return sonar.getFrontDistance();
 	}
 
-	public int getWallLeft() throws ConnectionLostException, InterruptedException
+	public int getWallLeft() throws ConnectionLostException,
+			InterruptedException
 	{
 		sonar.read();
 		return sonar.getLeftDistance();
 	}
 
-	public int getWallRight() throws ConnectionLostException, InterruptedException
+	public int getWallRight() throws ConnectionLostException,
+			InterruptedException
 	{
 		sonar.read();
 		return sonar.getRightDistance();
