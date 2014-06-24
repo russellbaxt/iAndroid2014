@@ -20,11 +20,17 @@ import android.os.SystemClock;
  */
 public class Lada extends IRobotCreateAdapter
 {
-	private final Dashboard dashboard;
+	private static final int DEGREE_ANGLE = 11;
+	private static final int BLOCK = 60;
+	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private boolean firstPass = true;
 	private int commandAzimuth;
 	private Robot myRobot;
+	public static Lada instance;
+	public int x = 0;
+	public int y = 6;
+	public int[][] mapintYX = new int[9][15];
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -44,16 +50,24 @@ public class Lada extends IRobotCreateAdapter
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
+		instance = this;
 	}
 
 	public void initialize() throws ConnectionLostException
 	{
 		dashboard.log("iAndroid2014 happy version 140523A");
 		myRobot = new Robot(dashboard, this);
+		Lada.instance = this;
 		myRobot.log("Ready!");
-		myRobot.goForward(10);
-		myRobot.log("I'm done.");
-		turnRight();		
+		mapMaze();
+	}
+
+	public void mapMaze() throws ConnectionLostException {
+		boolean done = false;
+		while(!done){
+			
+			myRobot.goForward(BLOCK);
+		}
 	}
 
 	/**
@@ -73,34 +87,20 @@ public class Lada extends IRobotCreateAdapter
 
 	public void turn(int commandAngle) throws ConnectionLostException 
 	{
-		// int startAzimuth = 0;
-		// if (firstPass)
-		// {
-		// startAzimuth += readCompass();
-		// commandAzimuth = (startAzimuth + commandAngle) % 360;
-		// dashboard.log("commandaz = " + commandAzimuth + " startaz = "
-		// + startAzimuth);
-		// firstPass = false;
-		// }
-		// int currentAzimuth = readCompass();
-		// dashboard.log("now = " + currentAzimuth);
-		// if (currentAzimuth >= commandAzimuth)
-		// {
-		// driveDirect(0, 0);
-		// firstPass = true;
-		// dashboard.log("finalaz = " + readCompass());
-		// }
+		int ls = 234;
+		int rs = -ls;
+		driveDirect(rs, ls);
+		SystemClock.sleep(DEGREE_ANGLE*commandAngle);
+		driveDirect(0, 0);
 	}
 
 	public void turnRight() throws ConnectionLostException
 	{
-		int ls = 220;
-		int rs = -ls;
-		driveDirect(rs, ls);
-		SystemClock.sleep(1000);
-		driveDirect(0, 0);
+		turn(90);
 	}
-
+	public void turnLeft() throws ConnectionLostException{
+		turn(270);
+	}
 	public int readCompass()
 	{
 		return (int) (dashboard.getAzimuth() + 360) % 360;
