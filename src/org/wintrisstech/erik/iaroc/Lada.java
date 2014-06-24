@@ -20,6 +20,7 @@ import android.os.SystemClock;
  */
 public class Lada extends IRobotCreateAdapter
 {
+	private static final int SLIDY = 5;
 	private static final int DEGREE_ANGLE = 11;
 	private static final int BLOCK = 60;
 	public final Dashboard dashboard;
@@ -92,6 +93,7 @@ public class Lada extends IRobotCreateAdapter
 		driveDirect(rs, ls);
 		SystemClock.sleep(DEGREE_ANGLE*commandAngle);
 		driveDirect(0, 0);
+
 	}
 
 	public void turnRight() throws ConnectionLostException
@@ -100,6 +102,11 @@ public class Lada extends IRobotCreateAdapter
 	}
 	public void turnLeft() throws ConnectionLostException{
 		turn(270);
+	}
+	
+	public void isWallFront()
+	{
+		
 	}
 	public int readCompass()
 	{
