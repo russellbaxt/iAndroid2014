@@ -4,11 +4,6 @@ package org.wintrisstech.erik.iaroc;
  * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.List;
-import java.util.Random;
-
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
@@ -16,6 +11,7 @@ import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 
 import android.os.SystemClock;
+import android.widget.Button;
 
 /**
  * A Lada is an implementation of the IRobotCreateInterface, inspired by Vic's
@@ -28,16 +24,20 @@ public class Lada extends IRobotCreateAdapter
 {
 	private static final int DEGREE_ANGLE = 11;
 	private static final int BLOCK = 60;
-	private static final int SLIDY = 5;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private Robot myRobot;
 	public static Lada instance;
-	public static int preferedAz;
+	public static int preferredAz;
 	public int x = 0;
 	public int y = 4;
 	public int dx = 1;
 	public int dy = 0;
+	public int startAz;
+	public int finalAz;
+	public int currentAz;
+	public static final int TURN_TOLERANCE = 5;
+	public static final int AZ_TOLERANCE = 2;
 	public int[][] mapintYX = new int[9][15];
 
 	/**
@@ -59,12 +59,16 @@ public class Lada extends IRobotCreateAdapter
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
 		instance = this;
+		dashboard.log("Lada constructor");
 	}
 
 	public void initialize() throws ConnectionLostException,
 			InterruptedException
 	{
-		preferedAz = (int) getAngle();
+		currentAz = getAngle();
+		preferredAz = getAngle();
+		dashboard.log("Initialize");
+		mapMaze();
 	}
 
 	private void solveMaze() throws ConnectionLostException
@@ -77,8 +81,7 @@ public class Lada extends IRobotCreateAdapter
 			if (bestPath == mapintYX[y][x + dx])
 			{
 				turnLeft();
-			}
-			else if (bestPath == mapintYX[y + dy][x])
+			} else if (bestPath == mapintYX[y + dy][x])
 			{
 				turnRight();
 			}
@@ -111,6 +114,7 @@ public class Lada extends IRobotCreateAdapter
 		while (!done)
 		{
 			mapintYX[y][x] += 1;
+			sonar.read();
 			if (!isWallLeft())
 			{
 				turnLeft();
@@ -128,7 +132,7 @@ public class Lada extends IRobotCreateAdapter
 			if (atEnd())
 			{
 				mapintYX[y][x] += 1;
-				done = false;
+				done = true;
 			}
 		}
 	}
@@ -148,8 +152,7 @@ public class Lada extends IRobotCreateAdapter
 	 */
 	public void loop() throws ConnectionLostException, InterruptedException
 	{
-		dashboard.log("Front distance" + getWallFront());
-		SystemClock.sleep(250);
+		currentAz = (int) getAngle();
 	}
 
 	public void turn(int commandAngle) throws ConnectionLostException
@@ -163,7 +166,23 @@ public class Lada extends IRobotCreateAdapter
 
 	public void turnRight() throws ConnectionLostException
 	{
-		turn(90);
+		startAz = getAngle();
+		finalAz = startAz + 90;
+		while (getAngle() - finalAz > TURN_TOLERANCE)
+		{
+			if (getAngle() - finalAz >= 45)
+			{
+				driveDirect(-450, 450);
+			} else if (getAngle() - finalAz >= 30)
+			{
+				driveDirect(-300, 300);
+			} else
+			{
+				driveDirect(-150, 150);
+			}
+			preferredAz += 90;
+		}
+		stop();
 		if (dx == 0 && dy == 1)
 		{
 			dx = 1;
@@ -182,11 +201,26 @@ public class Lada extends IRobotCreateAdapter
 			dy = 1;
 		}
 		dashboard.log("right");
-		preferedAz += 90;
 	}
 
 	public void turnLeft() throws ConnectionLostException
 	{
+		startAz = getAngle();
+		finalAz = startAz + -90;
+		while (getAngle() + finalAz > TURN_TOLERANCE)
+		{
+			if (getAngle() + finalAz >= 45)
+			{
+				driveDirect(450, -450);
+			} else if (getAngle() + finalAz >= 30)
+			{
+				driveDirect(300, 0300);
+			} else
+			{
+				driveDirect(150, -150);
+			}
+		}
+		stop();
 		turn(270);
 		if (dx == 0 && dy == 1)
 		{
@@ -206,7 +240,6 @@ public class Lada extends IRobotCreateAdapter
 			dy = -1;
 		}
 		dashboard.log("left");
-		preferedAz -= 90;
 	}
 
 	public boolean isWallFront() throws ConnectionLostException,
@@ -250,7 +283,26 @@ public class Lada extends IRobotCreateAdapter
 
 	public void straighten() throws ConnectionLostException
 	{
-
+		int diff;
+		if (dx == 1 && dy == 0)
+		{
+			diff = currentAz - preferredAz;
+			while (Math.abs(diff) >= AZ_TOLERANCE)
+			{
+				if (diff > 0)
+				{
+					driveDirect(45, -45);
+				} else
+				{
+					driveDirect(-45, 45);
+				}
+				diff = currentAz - preferredAz;
+			}
+		} else if (dx == -1 && dy == 0)
+		{
+			diff = currentAz - (preferredAz - 180);
+		}
+		stop();
 	}
 
 	private void stop() throws ConnectionLostException
