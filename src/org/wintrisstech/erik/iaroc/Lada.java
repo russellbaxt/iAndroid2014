@@ -57,6 +57,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public boolean mapped;
 	public boolean killed;
 	public ToggleButton killRun;
+	private Button dragRace;
+	private int ls = 400;
+	private int rs = 400;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -128,23 +131,69 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
+		dragRace = (Button) this.dashboard.findViewById(R.id.dragRace);
+		dragRace.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				Thread t = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+						try {
+							doDragRace();
+						} catch (ConnectionLostException e) {} catch (InterruptedException e) {}
+					}
+				});
+				t.start();
+			}
+
+		});
 
 		instance = this;
 	}
 
+	public void doDragRace() throws ConnectionLostException,
+			InterruptedException {
+		while (true) {
+			driveDirect(rs, ls);
+			straightenDrag();
+		}
+	}
+
+	public void straightenDrag() throws ConnectionLostException,
+			InterruptedException {
+		sonar.read();
+		int left = sonar.getLeftDistance();
+		int right = sonar.getRightDistance();
+		if (Math.abs(left - right) > SLIDY) {
+			if (left > right) {
+				ls = 425;
+				rs = 415;
+			}
+			if (right > left) {
+				rs = 425;
+				ls = 415;
+			} else {
+				rs = 425;
+				ls = 425;
+			}
+		}
+	}
+
 	private void sayTheName() {
-		List<String> names = new ArrayList<String>();
-		names.add("The Nerd Herd Robot");
-		names.add("The Hash Tag No Moss Guy");
-		names.add("Miss Moss");
-		names.add("Fox News");
-		names.add("Nyan Cat");
-		names.add("Olaf");
-		names.add("The Roomba");
-		Random r = new Random();
-		names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
-		String name = names.get(r.nextInt(names.size()));
-		dashboard.speak("My name is " + name);
+		// List<String> names = new ArrayList<String>();
+		// names.add("The Nerd Herd Robot");
+		// names.add("The Hash Tag No Moss Guy");
+		// names.add("Miss Moss");
+		// names.add("Fox News");
+		// names.add("Nyan Cat");
+		// names.add("Olaf");
+		// names.add("The Roomba");
+		// Random r = new Random();
+		// names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
+		// String name = names.get(r.nextInt(names.size()));
+		// dashboard.speak("My name is " + name);
 	}
 
 	public void initialize() throws ConnectionLostException,
@@ -227,7 +276,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	private void straighten() throws ConnectionLostException {
 		if (deadEnd()) {
-			if (Math.abs(sonar.getLeftDistance() - sonar.getRightDistance()) > SLIDY) {
+			if (dif() > SLIDY) {
 				if (sonar.getLeftDistance() > sonar.getRightDistance()) {
 					turnLeft();
 					myRobot.goForward((sonar.getLeftDistance() - sonar
@@ -246,6 +295,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		} else {
 			turn(correctAz - (getAngle() % 90));
 		}
+	}
+
+	private int dif() {
+		return Math.abs(sonar.getLeftDistance() - sonar.getRightDistance());
 	}
 
 	public void mapMazeRight() throws ConnectionLostException,
