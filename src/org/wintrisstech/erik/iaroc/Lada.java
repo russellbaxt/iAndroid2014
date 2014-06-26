@@ -208,7 +208,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		Random r = new Random();
 		names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
 		String name = names.get(r.nextInt(names.size()));
-		dashboard.speak("My name is " + name);
+//		dashboard.speak("My name is " + name);
 	}
 
 	public void initialize() throws ConnectionLostException,
@@ -275,7 +275,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					while (!done && !killed) {
 						mapintYX[y][x] += 1;
 //						straighten();
-						fixPosition();
 						sonar.read();
 						if (!isWallLeft()) {
 							turnLeft();
@@ -288,6 +287,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						x += dx;
 						y += dy;
 						myRobot.goForward(BLOCK);
+						fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
 							done = false;
@@ -337,7 +337,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					boolean done = false;
 					while (!done && !killed) {
 //						straighten();
-						fixPosition();
 						mapintYX[y][x] += 1;
 						sonar.read();
 						if (!isWallRight()) {
@@ -348,10 +347,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 								turnLeft();
 							}
 						}
-						fixPosition();
 						x += dx;
 						y += dy;
 						myRobot.goForward(BLOCK);
+						fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
 							done = false;
