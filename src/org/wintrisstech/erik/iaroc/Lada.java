@@ -65,6 +65,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private int rs = 400;
 	private double currentAz;
 	private double preferredAz;
+	public static final int BLOCK_TOLERANCE_HIGH = 20;
+	public static final int BLOCK_TOLERANCE_LOW = 10;
+	public static final int HARMONY_NUMBER = 15;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -272,6 +275,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					while (!done && !killed) {
 						mapintYX[y][x] += 1;
 //						straighten();
+						fixPosition();
 						sonar.read();
 						if (!isWallLeft()) {
 							turnLeft();
@@ -314,6 +318,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		}
 		dashboard.log(diff + "-" + currentAz + "-" + preferredAz);
 		driveDirect(0, 0);
+		
 	}
 
 	private int dif() {
@@ -332,6 +337,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					boolean done = false;
 					while (!done && !killed) {
 //						straighten();
+						fixPosition();
 						mapintYX[y][x] += 1;
 						sonar.read();
 						if (!isWallRight()) {
@@ -342,7 +348,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 								turnLeft();
 							}
 						}
-						straighten();
+						fixPosition();
 						x += dx;
 						y += dy;
 						myRobot.goForward(BLOCK);
@@ -446,8 +452,47 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public boolean isWallRight() {
 		return sonar.getRightDistance() < BLOCK;
 	}
+	
+	public int getWallFront() {
+		return sonar.getFrontDistance();
+	}
+
+	public int getWallLeft() {
+		return sonar.getLeftDistance();
+	}
+
+	public int getWallRight() {
+		return sonar.getRightDistance();
+	}
 
 	public double readCompass() {
 		return (dashboard.getAzimuth() + 360) % 360;
 	}
+
+	public void fixPosition() throws ConnectionLostException
+	{
+		int front = getWallFront();
+		int right = getWallRight();
+		int left = getWallLeft();
+
+		if (front <= BLOCK_TOLERANCE_LOW || front >= BLOCK_TOLERANCE_HIGH)
+		{
+			myRobot.goForward(front - HARMONY_NUMBER);
+		}
+
+		if (right <= BLOCK_TOLERANCE_LOW || right >= BLOCK_TOLERANCE_HIGH)
+		{
+			turnLeft();
+			myRobot.goForward(HARMONY_NUMBER - right);
+			turnRight();
+		}
+
+		if (left <= BLOCK_TOLERANCE_LOW || left >= BLOCK_TOLERANCE_HIGH)
+		{
+			turnRight();
+			myRobot.goForward(HARMONY_NUMBER - left);
+			turnLeft();
+		}
+	}
+
 }
