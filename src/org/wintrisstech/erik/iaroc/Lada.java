@@ -40,6 +40,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	/**
 	 * Olaf!
 	 */
+	private static final int MAX_SPEED = 425;
+	private static final int CHANGE_SPEED = 415;
 	private static final int SLIDY = 5;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
@@ -136,13 +138,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 			@Override
 			public void onClick(View arg0) {
-				Thread t = new Thread(new Runnable(){
+				Thread t = new Thread(new Runnable() {
 
 					@Override
 					public void run() {
 						try {
 							doDragRace();
-						} catch (ConnectionLostException e) {} catch (InterruptedException e) {}
+						} catch (ConnectionLostException e) {
+						} catch (InterruptedException e) {
+						}
 					}
 				});
 				t.start();
@@ -155,10 +159,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	public void doDragRace() throws ConnectionLostException,
 			InterruptedException {
-		while (true) {
-			driveDirect(rs, ls);
+		while (true && !killed) {
+			driveDirect(this.rs, this.ls);
 			straightenDrag();
 		}
+		driveDirect(0, 0);
 	}
 
 	public void straightenDrag() throws ConnectionLostException,
@@ -166,19 +171,23 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		sonar.read();
 		int left = sonar.getLeftDistance();
 		int right = sonar.getRightDistance();
-		if (Math.abs(left - right) > SLIDY) {
+		if (Math.abs(left - right) > SLIDY && Math.abs(left - right) < 30) {
 			if (left > right) {
-				ls = 425;
-				rs = 415;
+				this.ls = CHANGE_SPEED;
+				this.rs = MAX_SPEED;
 			}
 			if (right > left) {
-				rs = 425;
-				ls = 415;
-			} else {
-				rs = 425;
-				ls = 425;
+				this.ls = MAX_SPEED;
+				this.rs = CHANGE_SPEED;
 			}
+		} else if (!(Math.abs(left - right) > SLIDY)){
+			this.rs = MAX_SPEED;
+			this.ls = MAX_SPEED;
 		}
+		dashboard.log("L: " + sonar.getLeftDistance() + " R:"
+				+ sonar.getRightDistance());
+		dashboard.log("Left: " + ls + ". Right: " + rs + ".");
+		dashboard.log("Dif: " + Math.abs(left - right));
 	}
 
 	private void sayTheName() {
