@@ -32,6 +32,16 @@ public class Robot {
 			int dd = lada.getDistance();
 			totalDistance += dd;
 			//log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
+//			log("" + totalDistance / 10 + " cm");
 		}
 		stop();
 	}

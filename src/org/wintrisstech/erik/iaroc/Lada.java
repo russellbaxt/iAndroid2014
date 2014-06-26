@@ -16,6 +16,8 @@ import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
 
 import android.os.SystemClock;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 
 /**
