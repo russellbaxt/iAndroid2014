@@ -43,6 +43,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int MAX_SPEED = 425;
 	private static final int CHANGE_SPEED = 415;
 	private static final int SLIDY = 5;
+	private static final int AZ_TOLERANCE = 10;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private Robot myRobot;
@@ -62,6 +63,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private Button dragRace;
 	private int ls = 400;
 	private int rs = 400;
+	private double currentAz;
+	private double preferredAz;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -180,7 +183,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				this.ls = MAX_SPEED;
 				this.rs = CHANGE_SPEED;
 			}
-		} else if (!(Math.abs(left - right) > SLIDY)){
+		} else if (!(Math.abs(left - right) > SLIDY)) {
 			this.rs = MAX_SPEED;
 			this.ls = MAX_SPEED;
 		}
@@ -191,18 +194,18 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	private void sayTheName() {
-		// List<String> names = new ArrayList<String>();
-		// names.add("The Nerd Herd Robot");
-		// names.add("The Hash Tag No Moss Guy");
-		// names.add("Miss Moss");
-		// names.add("Fox News");
-		// names.add("Nyan Cat");
-		// names.add("Olaf");
-		// names.add("The Roomba");
-		// Random r = new Random();
-		// names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
-		// String name = names.get(r.nextInt(names.size()));
-		// dashboard.speak("My name is " + name);
+		List<String> names = new ArrayList<String>();
+		names.add("The Nerd Herd Robot");
+		names.add("The Hash Tag No Moss Guy");
+		names.add("Miss Moss");
+		names.add("Fox News");
+		names.add("Nyan Cat");
+		names.add("Olaf");
+		names.add("The Roomba");
+		Random r = new Random();
+		names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
+		String name = names.get(r.nextInt(names.size()));
+		dashboard.speak("My name is " + name);
 	}
 
 	public void initialize() throws ConnectionLostException,
@@ -227,10 +230,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 					}
 				}
+				/*while(true && !killed){
+					dashboard.log(""+readCompass()+"");
+					Object lock = new Object();
+					synchronized(lock){
+						try {
+							lock.wait(500);
+						} catch (InterruptedException e) {}
+					}
+				}*/
 			}
 
 		});
 		t.start();
+		
 	}
 
 	private String map() {
@@ -243,7 +256,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		}
 		return sb.toString();
 	}
-
+	
+	public double startAz = 0;
+	
 	public void mapMazeLeft() throws ConnectionLostException,
 			InterruptedException {
 		Thread t = new Thread(new Runnable() {
@@ -251,11 +266,12 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			@Override
 			public void run() {
 				try {
+					startAz = readCompass();
+					preferredAz = startAz;
 					boolean done = false;
 					while (!done && !killed) {
 						mapintYX[y][x] += 1;
-						sonar.read();
-						straighten();
+//						straighten();
 						sonar.read();
 						if (!isWallLeft()) {
 							turnLeft();
@@ -284,26 +300,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	private void straighten() throws ConnectionLostException {
-		if (deadEnd()) {
-			if (dif() > SLIDY) {
-				if (sonar.getLeftDistance() > sonar.getRightDistance()) {
-					turnLeft();
-					myRobot.goForward((sonar.getLeftDistance() - sonar
-							.getRightDistance()) / 2);
-					turnRight();
-					moveFrontBack();
-				} else {
-					turnRight();
-					myRobot.goForward((sonar.getRightDistance() - sonar
-							.getLeftDistance()) / 2);
-					turnLeft();
-					moveFrontBack();
-				}
+		currentAz = readCompass();
+		double diff = currentAz - preferredAz;
+		dashboard.log(diff + "\t" + currentAz + "\t" + preferredAz);
+		while (Math.abs(diff) >= AZ_TOLERANCE) {
+			if (diff > 0) {
+				driveDirect(30, -30);
+			} else {
+				driveDirect(-30, 30);
 			}
-			correctAz = getAngle();
-		} else {
-			turn(correctAz - (getAngle() % 90));
+			currentAz = readCompass();
+			diff = currentAz - preferredAz;
 		}
+		dashboard.log(diff + "-" + currentAz + "-" + preferredAz);
+		driveDirect(0, 0);
 	}
 
 	private int dif() {
@@ -317,11 +327,12 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			@Override
 			public void run() {
 				try {
+					startAz = readCompass();
+					preferredAz = startAz;
 					boolean done = false;
 					while (!done && !killed) {
+//						straighten();
 						mapintYX[y][x] += 1;
-						sonar.read();
-						straighten();
 						sonar.read();
 						if (!isWallRight()) {
 							turnRight();
@@ -331,6 +342,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 								turnLeft();
 							}
 						}
+						straighten();
 						x += dx;
 						y += dy;
 						myRobot.goForward(BLOCK);
@@ -386,6 +398,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		driveDirect(rs, ls);
 		SystemClock.sleep(DEGREE_ANGLE * Math.abs(commandAngle));
 		driveDirect(0, 0);
+		preferredAz = (preferredAz + commandAngle + 360) % 360;
 	}
 
 	public void turnRight() throws ConnectionLostException {
@@ -403,7 +416,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			dx = 0;
 			dy = 1;
 		}
-		dashboard.log("right");
 	}
 
 	public void turnLeft() throws ConnectionLostException {
@@ -421,7 +433,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			dx = 0;
 			dy = -1;
 		}
-		dashboard.log("right");
 	}
 
 	public boolean isWallFront() {
@@ -436,7 +447,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		return sonar.getRightDistance() < BLOCK;
 	}
 
-	public int readCompass() {
-		return (int) (dashboard.getAzimuth() + 360) % 360;
+	public double readCompass() {
+		return (dashboard.getAzimuth() + 360) % 360;
 	}
 }

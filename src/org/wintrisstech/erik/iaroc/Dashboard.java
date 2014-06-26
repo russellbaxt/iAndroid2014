@@ -89,6 +89,7 @@ public class Dashboard extends IOIOActivity implements
 
 		// Compass stuff
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+		
 		sensorAccelerometer = sensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		sensorMagneticField = sensorManager
@@ -105,6 +106,10 @@ public class Dashboard extends IOIOActivity implements
 		scroller = (ScrollView) findViewById(R.id.scroller);
 		log(getString(R.string.wait_ioio));
 
+		for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
+			log(sensor != null && sensor.getName() != null ? sensor.getName() : "null");
+		}
+		
 	}
 
 	@Override
@@ -161,6 +166,7 @@ public class Dashboard extends IOIOActivity implements
 
 	@Override
 	public void onSensorChanged(SensorEvent event) {
+//		log("Dashboard.onSensorChanged()");
 		switch (event.sensor.getType()) {
 		case Sensor.TYPE_ACCELEROMETER:
 			for (int i = 0; i < 3; i++) {
@@ -185,7 +191,6 @@ public class Dashboard extends IOIOActivity implements
 				roll = Math.toDegrees(matrixValues[2]);
 			}
 		}
-
 	}
 
 	/**
