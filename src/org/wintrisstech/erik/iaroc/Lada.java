@@ -4,6 +4,11 @@ package org.wintrisstech.erik.iaroc;
  * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
+import java.util.ArrayList;
+import java.util.EventListener;
+import java.util.List;
+import java.util.Random;
+
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
 
@@ -31,8 +36,8 @@ public class Lada extends IRobotCreateAdapter
 	public static int preferredAz;
 	public int x = 0;
 	public int y = 4;
-	public int dx = 1;
-	public int dy = 0;
+	public int dx = 1; //directionX
+	public int dy = 0; //directionY
 	public int startAz;
 	public int finalAz;
 	public int currentAz;
@@ -291,10 +296,10 @@ public class Lada extends IRobotCreateAdapter
 			{
 				if (diff > 0)
 				{
-					driveDirect(45, -45);
+					driveDirect(15, -15);
 				} else
 				{
-					driveDirect(-45, 45);
+					driveDirect(-15, 15);
 				}
 				diff = currentAz - preferredAz;
 			}

@@ -31,7 +31,7 @@ public class Robot {
 			lada.readSensors(Lada.SENSORS_GROUP_ID6);
 			int dd = lada.getDistance();
 			totalDistance += dd;
-			log("" + totalDistance / 10 + " cm");
+			//log("" + totalDistance / 10 + " cm");
 		}
 		stop();
 	}
