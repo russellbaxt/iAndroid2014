@@ -65,6 +65,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private int rs = 400;
 	private double currentAz;
 	private double preferredAz;
+	private Button goldRush;
 	public static final int BLOCK_TOLERANCE_HIGH = 20;
 	public static final int BLOCK_TOLERANCE_LOW = 10;
 	public static final int HARMONY_NUMBER = 15;
@@ -159,8 +160,21 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
+		goldRush = (Button) this.dashboard.findViewById(R.id.dragRace);
+		goldRush.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View arg0) {
+				goldRush();
+			}
+			
+		});
 
 		instance = this;
+	}
+
+	public void goldRush() {
+		
 	}
 
 	public void doDragRace() throws ConnectionLostException,
@@ -226,6 +240,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			@Override
 			public void run() {
 				dashboard.log(map());
+				y = 4;
+				x = 15;
 				for (int i = 0; i < mapintYX.length; i++) {
 					for (int j = 0; j < mapintYX[i].length; j++) {
 						if (mapintYX[i][j] <= 0) {
@@ -233,6 +249,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 					}
 				}
+				int north = mapintYX[y+1][x];
+				int east = mapintYX[y][x+1];
 				/*while(true && !killed){
 					dashboard.log(""+readCompass()+"");
 					Object lock = new Object();
