@@ -55,6 +55,36 @@
             android:layout_height="wrap_content"
             android:text="Drag Race" />
 
+        <Button
+            android:id="@+id/goldRush"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gold Rush" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/turnLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Turn Left" />
+
+        <Button
+            android:id="@+id/turnRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Turn Right" />
+
+        <Button
+            android:id="@+id/calibrate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Calibrate" />
+
     </LinearLayout>
     
     <ScrollView android:id="@+id/scroller"
