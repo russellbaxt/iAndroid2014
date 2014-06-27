@@ -29,6 +29,8 @@ import android.widget.ToggleButton;
  * @author Erik Simplified "API" class by Phil version 140523A
  */
 public class Lada extends IRobotCreateAdapter implements EventListener {
+	private static final int CSD = 14;
+	private static final int CFD = 18;
 	/**
 	 * Multiply by angle using speed 225
 	 */
@@ -187,7 +189,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			public void onClick(View v) {
 				try {
 					turnLeft();
-				} catch (ConnectionLostException e) {
+				} catch (Exception e) {
 				}
 			}
 
@@ -199,7 +201,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			public void onClick(View v) {
 				try {
 					turnRight();
-				} catch (ConnectionLostException e) {
+				} catch (Exception e) {
 				}
 			}
 
@@ -248,11 +250,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						right = getWallRight();
 						left = getWallLeft();
 						dashboard.log("F:" + front + " and R:" + right + " and L:" + left);
-						driveDirect(300, 300);
+						driveDirect(300, 280);
 						front = getWallFront();
 						right = getWallRight();
 						left = getWallLeft();
-						if (front <= 5) {
+						if (front <= 10) {
 							fixFront(front);
 							if (dirLeft) {
 								dashboard.log("left");
@@ -275,7 +277,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		myRobot.goForward(front - 5);
 	}
 
-	public void aroundLeft() throws ConnectionLostException {
+	public void aroundLeft() throws ConnectionLostException, InterruptedException {
 		dirLeft = false;
 		turnLeft();
 		while (right <= 5) {
@@ -286,7 +288,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		turnRight();
 	}
 
-	public void aroundRight() throws ConnectionLostException {
+	public void aroundRight() throws ConnectionLostException, InterruptedException {
 		dirLeft = true;
 		turnRight();
 		while (left <= 5) {
@@ -410,10 +412,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						mapintYX[y][x] += 1;
 						// straighten();
 						sonar.read();
+						if(isWallFront()){
+							myRobot.goForward(getWallFront() - CFD);
+						}
+						sonar.read();
 						if (!isWallLeft()) {
 							turnLeft();
+							if(isWallRight()){
+								myRobot.goForward(getWallRight()-CSD);
+							}
 						} else if (isWallFront()) {
 							turnRight();
+							if(isWallLeft()){
+								myRobot.goForward(getWallLeft() - CSD);
+							}
 							if (isWallRight()) {
 								turnRight();
 							}
@@ -473,10 +485,19 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						// straighten();
 						mapintYX[y][x] += 1;
 						sonar.read();
+						if(isWallFront()){
+							myRobot.goForward(getWallFront()-CFD);
+						}
 						if (!isWallRight()) {
 							turnRight();
+							if(isWallLeft()){
+								myRobot.goForward(getWallLeft() - CSD);
+							}
 						} else if (isWallFront()) {
 							turnLeft();
+							if(isWallRight()){
+								myRobot.goForward(getWallRight() - CSD);
+							}
 							if (isWallLeft()) {
 								turnLeft();
 							}
@@ -540,8 +561,12 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		preferredAz = (preferredAz + commandAngle + 360) % 360;
 	}
 
-	public void turnRight() throws ConnectionLostException {
+	public void turnRight() throws ConnectionLostException, InterruptedException {
+		sonar.read();
 		turn(90);
+		if(isWallLeft()){
+			myRobot.goForward(getWallLeft() - 14);
+		}
 		if (dx == 0 && dy == 1) {
 			dx = 1;
 			dy = 0;
@@ -557,8 +582,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		}
 	}
 
-	public void turnLeft() throws ConnectionLostException {
+	public void turnLeft() throws ConnectionLostException, InterruptedException {
 		turn(-90);
+		
 		if (dx == 0 && dy == 1) {
 			dx = -1;
 			dy = 0;
@@ -602,7 +628,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		return (dashboard.getAzimuth() + 360) % 360;
 	}
 
-	public void fixPosition() throws ConnectionLostException {
+	public void fixPosition() throws ConnectionLostException, InterruptedException {
 		int front = getWallFront();
 		int right = getWallRight();
 		int left = getWallLeft();
