@@ -4,17 +4,11 @@ package org.wintrisstech.erik.iaroc;
  * Super Happy version...ultrasonics working...Version 140512A...mods by Vic
  * Added compass class...works..updatged to adt bundle 20140321
  **************************************************************************/
-import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.List;
-import java.util.Random;
-
 import ioio.lib.api.IOIO;
 import ioio.lib.api.exception.ConnectionLostException;
-
 import org.wintrisstech.irobot.ioio.IRobotCreateAdapter;
 import org.wintrisstech.irobot.ioio.IRobotCreateInterface;
-
 import android.os.SystemClock;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,19 +26,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 {
 	private static final int CSD = 14;
 	private static final int CFD = 18;
-	/**
-	 * Multiply by angle using//#noMoss
-	 * 
-	 * speed 225
-	 */
+	// Multiply by angle using speed 225
 	private static final int DEGREE_ANGLE = 10;
-	/**
-	 * Centimeters of a block
-	 */
-	private static final int BLOCK = 70;
-	/**
-	 * Olaf!
-	 */
+	private static final int BLOCK = 69;
 	private static final int MAX_SPEED = 425;
 	private static final int CHANGE_SPEED = 415;
 	private static final int SLIDY = 5;
@@ -61,7 +45,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	public Button leftMap;
 	public Button rightMap;
 	public Button solveMap;
-	private int correctAz;
 	public boolean mapped;
 	public boolean killed;
 	public ToggleButton killRun;
@@ -80,7 +63,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	public static final int BLOCK_TOLERANCE_LOW = 10;
 	public static final int HARMONY_NUMBER = 15;
 	private static final int SPEED = 200;
-	protected static final int FRONT_TOLERANCE = 20;
+	protected static final int FRONT_TOLERANCE = 25;
+	private static final int TOO_CLOSE = 5;
 	public boolean dirLeft = true;
 	private Button calibrate;
 
@@ -102,7 +86,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		super(create);
 		sonar = new UltraSonicSensors(ioio);
 		this.dashboard = dashboard;
-		sayTheName();
 		leftMap = (Button) this.dashboard.findViewById(R.id.leftHand);
 		leftMap.setOnClickListener(new OnClickListener()
 		{
@@ -289,19 +272,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 			{
 				try
 				{
-					boolean done = false;
+					readSensors(SENSORS_INFRARED_BYTE);
 					boolean dirLeft = true;
 					dashboard.log("start");
-					while (!done)
+					while (getInfraredByte() == 255)
 					{
 						sonar.read();
 						readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+						readSensors(SENSORS_INFRARED_BYTE);
 						front = getWallFront();
 						right = getWallRight();
 						left = getWallLeft();
 						dashboard.log("F:" + front + " and R:" + right
 								+ " and L:" + left);
-						driveDirect(SPEED, SPEED );
+						driveDirect(SPEED, SPEED);
 						if (front <= FRONT_TOLERANCE || isBumpLeft()
 								|| isBumpRight())
 						{
@@ -321,66 +305,35 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 				{
 
 				}
+				try
+				{
+					dashboard.speak("Yahoo!");
+					dock();
+				} catch (ConnectionLostException e)
+				{
+					e.printStackTrace();
+				}
 			}
 		});
 		t.start();
 	}
 
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
-	// #noMoss
+	public void dock() throws ConnectionLostException
+	{
+		this.demo(DEMO_COVER_AND_DOCK);
+	}
 
 	public void fixFront(int front) throws ConnectionLostException
 	{
-		myRobot.goForward(front - 5);// D
+		myRobot.goBackward(TOO_CLOSE - front);
 	}
 
-	public void aroundLeft() throws ConnectionLostException, InterruptedException
+	public void aroundLeft() throws ConnectionLostException,
+			InterruptedException
 	{
 		dirLeft = false;
 		turnLeft();
-		while (right <= 5)
+		while (right <= FRONT_TOLERANCE)
 		{
 			sonar.read();
 			right = getWallRight();
@@ -389,13 +342,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 			{
 				turnLeft();
 				driveDirect(SPEED, SPEED);
-				while (left <= FRONT_TOLERANCE){
+				while (left <= FRONT_TOLERANCE)
+				{
 					sonar.read();
 					left = getWallLeft();
 				}
-				myRobot.goForward(14);
+				dashboard.speak("YO LOW!");
+				myRobot.goForward(60);
 				turnRight();
-				myRobot.goForward(14);
+				myRobot.goForward(60);
 				turnRight();
 			}
 		}
@@ -403,26 +358,31 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		turnRight();
 	}
 
-	public void aroundRight() throws ConnectionLostException, InterruptedException
+	public void aroundRight() throws ConnectionLostException,
+			InterruptedException
 	{
 		dirLeft = true;
 		turnRight();
 		while (left <= FRONT_TOLERANCE)
 		{
 			sonar.read();
+			sonar.read();
 			left = getWallLeft();
 			driveDirect(SPEED, SPEED);
 			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight())
 			{
+				dashboard.log("furthurer");
 				turnRight();
 				driveDirect(SPEED, SPEED);
-				while (right <= FRONT_TOLERANCE){
+				while (right <= FRONT_TOLERANCE)
+				{
 					sonar.read();
 					right = getWallRight();
 				}
-				myRobot.goForward(14);
+				dashboard.speak("YO LOW!");
+				myRobot.goForward(60);
 				turnLeft();
-				myRobot.goForward(14);
+				myRobot.goForward(60);
 				turnLeft();
 			}
 		}
@@ -434,7 +394,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 			InterruptedException
 	{
 		while (true && !killed)
-		{ // #noMoss
+		{
 			driveDirect(this.rs, this.ls);
 			straightenDrag();
 		}
@@ -468,22 +428,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 				+ sonar.getRightDistance());
 		dashboard.log("Left: " + ls + ". Right: " + rs + ".");
 		dashboard.log("Dif: " + Math.abs(left - right));
-	}
-
-	private void sayTheName()
-	{
-		List<String> names = new ArrayList<String>();
-		names.add("The Nerd Herd Robot");
-		names.add("The Hash Tag No Moss Guy");
-		names.add("Miss Moss");
-		names.add("Fox News");
-		names.add("Nyan Cat");
-		names.add("Olaf");
-		names.add("The Roomba");
-		Random r = new Random();
-		names.add("Prisoner Number " + Integer.toString(r.nextInt(1000)));
-		String name = names.get(r.nextInt(names.size()));
-		// dashboard.speak("My name is " + name);
 	}
 
 	public void initialize() throws ConnectionLostException,
