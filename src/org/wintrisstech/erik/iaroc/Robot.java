@@ -32,16 +32,21 @@ public class Robot {
 			int dd = lada.getDistance();
 			totalDistance += dd;
 			//log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
-//			log("" + totalDistance / 10 + " cm");
+		}
+		stop();
+	}
+	
+	public void goBackward(int centimeters) throws ConnectionLostException
+	{
+		int totalDistance = 0;
+		lada.readSensors(Lada.SENSORS_GROUP_ID6);
+		lada.driveDirect(-250, -250);
+		while (totalDistance < centimeters * 10)
+		{
+			lada.readSensors(Lada.SENSORS_GROUP_ID6);
+			int dd = lada.getDistance();
+			totalDistance += Math.abs(dd);
+			//log("" + totalDistance / 10 + " cm");
 		}
 		stop();
 	}
