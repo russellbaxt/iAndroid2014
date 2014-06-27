@@ -121,8 +121,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 
 		});
 		rightMap = (Button) this.dashboard.findViewById(R.id.rightHand);
-		rightMap.setOnClickListener(new OnClickListener()
-		{
+		rightMap.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0)
@@ -324,12 +323,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		t.start();
 	}
 
-	public void fixFront(int front) throws ConnectionLostException
-	{
-		if (front <= 10)
-		{
-			myRobot.goForward(-10);
-		}
+	public void fixFront(int front) throws ConnectionLostException {
+		move(front - 5);//TBD
 	}
 
 	public void aroundLeft() throws ConnectionLostException {
@@ -471,7 +466,19 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	}
 
 	public double startAz = 0;
-
+	public void move(int centimeters) throws ConnectionLostException
+	{
+		int totalDistance = 0;
+		readSensors(Lada.SENSORS_GROUP_ID6);
+		int go = centimeters > 0 ? 25 : -25;
+		while (totalDistance < Math.abs(centimeters) * 10)
+		{
+			driveDirect(go, go);
+			readSensors(Lada.SENSORS_GROUP_ID6);
+			int dd = getDistance();
+			totalDistance += Math.abs(dd);
+		}
+	}
 	public void mapMazeLeft() throws ConnectionLostException,
 			InterruptedException
 	{
@@ -491,14 +498,21 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 						mapintYX[y][x] += 1;
 						// straighten();
 						sonar.read();
-						if (!isWallLeft())
-						{
+						if(isWallFront()){
+							move(getWallFront() - CFD);
+						}
+						sonar.read();
+						if (!isWallLeft()) {
 							turnLeft();
-						} else if (isWallFront())
-						{
+							if(isWallRight()){
+								move(getWallRight()-CSD);
+							}
+						} else if (isWallFront()) {
 							turnRight();
-							if (isWallRight())
-							{
+							if(isWallLeft()){
+								move(getWallLeft() - CSD);
+							}
+							if (isWallRight()) {
 								turnRight();
 							}
 						}
@@ -569,14 +583,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 						// straighten();
 						mapintYX[y][x] += 1;
 						sonar.read();
-						if (!isWallRight())
-						{
+						if(isWallFront()){
+							move(getWallFront()-CFD);
+						}
+						if (!isWallRight()) {
 							turnRight();
-						} else if (isWallFront())
-						{
+							if(isWallLeft()){
+								move(getWallLeft() - CSD);
+							}
+						} else if (isWallFront()) {
 							turnLeft();
-							if (isWallLeft())
-							{
+							if(isWallRight()){
+								move(getWallRight() - CSD);
+							}
+							if (isWallLeft()) {
 								turnLeft();
 							}
 						}
@@ -651,8 +671,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	public void turnRight() throws ConnectionLostException
 	{
 		turn(90);
-		if (dx == 0 && dy == 1)
-		{
+		if (dx == 0 && dy == 1) {
 			dx = 1;
 			dy = 0;
 		} else if (dx == 0 && dy == -1)
