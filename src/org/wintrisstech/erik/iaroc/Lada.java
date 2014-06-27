@@ -274,7 +274,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	public void fixFront(int front) throws ConnectionLostException {
-		myRobot.goForward(front - 5);
+		move(front - 5);
 	}
 
 	public void aroundLeft() throws ConnectionLostException, InterruptedException {
@@ -284,7 +284,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			right = getWallRight();
 			driveDirect(SPEED, SPEED);
 		}
-		myRobot.goForward(13);
+		move(13);
 		turnRight();
 	}
 
@@ -295,7 +295,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			left = getWallLeft();
 			driveDirect(SPEED, SPEED);
 		}
-		myRobot.goForward(13);
+		move(13);
 		turnLeft();
 	}
 
@@ -397,7 +397,19 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	public double startAz = 0;
-
+	public void move(int centimeters) throws ConnectionLostException
+	{
+		int totalDistance = 0;
+		readSensors(Lada.SENSORS_GROUP_ID6);
+		int go = centimeters > 0 ? 250 : -250;
+		driveDirect(go, go);
+		while (totalDistance < centimeters * 10)
+		{
+			readSensors(Lada.SENSORS_GROUP_ID6);
+			int dd = getDistance();
+			totalDistance += dd;
+		}
+	}
 	public void mapMazeLeft() throws ConnectionLostException,
 			InterruptedException {
 		Thread t = new Thread(new Runnable() {
@@ -413,18 +425,18 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						// straighten();
 						sonar.read();
 						if(isWallFront()){
-							myRobot.goForward(getWallFront() - CFD);
+							move(getWallFront() - CFD);
 						}
 						sonar.read();
 						if (!isWallLeft()) {
 							turnLeft();
 							if(isWallRight()){
-								myRobot.goForward(getWallRight()-CSD);
+								move(getWallRight()-CSD);
 							}
 						} else if (isWallFront()) {
 							turnRight();
 							if(isWallLeft()){
-								myRobot.goForward(getWallLeft() - CSD);
+								move(getWallLeft() - CSD);
 							}
 							if (isWallRight()) {
 								turnRight();
@@ -432,7 +444,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 						x += dx;
 						y += dy;
-						myRobot.goForward(BLOCK);
+						move(BLOCK);
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -486,17 +498,17 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						mapintYX[y][x] += 1;
 						sonar.read();
 						if(isWallFront()){
-							myRobot.goForward(getWallFront()-CFD);
+							move(getWallFront()-CFD);
 						}
 						if (!isWallRight()) {
 							turnRight();
 							if(isWallLeft()){
-								myRobot.goForward(getWallLeft() - CSD);
+								move(getWallLeft() - CSD);
 							}
 						} else if (isWallFront()) {
 							turnLeft();
 							if(isWallRight()){
-								myRobot.goForward(getWallRight() - CSD);
+								move(getWallRight() - CSD);
 							}
 							if (isWallLeft()) {
 								turnLeft();
@@ -504,7 +516,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 						x += dx;
 						y += dy;
-						myRobot.goForward(BLOCK);
+						move(BLOCK);
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -523,10 +535,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	private void moveFrontBack() throws ConnectionLostException {
 		if (sonar.getLeftDistance() > sonar.getFrontDistance()) {
-			myRobot.goForward(-(sonar.getLeftDistance() - sonar
+			move(-(sonar.getLeftDistance() - sonar
 					.getFrontDistance()));
 		} else {
-			myRobot.goForward(sonar.getLeftDistance()
+			move(sonar.getLeftDistance()
 					- sonar.getFrontDistance());
 		}
 	}
@@ -565,7 +577,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		sonar.read();
 		turn(90);
 		if(isWallLeft()){
-			myRobot.goForward(getWallLeft() - 14);
+			move(getWallLeft() - 14);
 		}
 		if (dx == 0 && dy == 1) {
 			dx = 1;
@@ -634,18 +646,18 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		int left = getWallLeft();
 
 		if (front <= BLOCK_TOLERANCE_LOW || front >= BLOCK_TOLERANCE_HIGH) {
-			myRobot.goForward(front - HARMONY_NUMBER);
+			move(front - HARMONY_NUMBER);
 		}
 
 		if (right <= BLOCK_TOLERANCE_LOW || right >= BLOCK_TOLERANCE_HIGH) {
 			turnLeft();
-			myRobot.goForward(HARMONY_NUMBER - right);
+			move(HARMONY_NUMBER - right);
 			turnRight();
 		}
 
 		if (left <= BLOCK_TOLERANCE_LOW || left >= BLOCK_TOLERANCE_HIGH) {
 			turnRight();
-			myRobot.goForward(HARMONY_NUMBER - left);
+			move(HARMONY_NUMBER - left);
 			turnLeft();
 		}
 	}
