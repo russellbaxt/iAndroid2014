@@ -30,6 +30,8 @@ import android.widget.ToggleButton;
  */
 public class Lada extends IRobotCreateAdapter implements EventListener
 {
+	private static final int CSD = 14;
+	private static final int CFD = 18;
 	/**
 	 * Multiply by angle using speed 225
 	 */
@@ -57,6 +59,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	public Button leftMap;
 	public Button rightMap;
 	public Button solveMap;
+	private int correctAz;
 	public boolean mapped;
 	public boolean killed;
 	public ToggleButton killRun;
@@ -329,8 +332,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		}
 	}
 
-	public void aroundLeft() throws ConnectionLostException
-	{
+	public void aroundLeft() throws ConnectionLostException {
 		dirLeft = false;
 		turnLeft();
 		while (right <= 5)
@@ -342,8 +344,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		turnRight();
 	}
 
-	public void aroundRight() throws ConnectionLostException
-	{
+	public void aroundRight() throws ConnectionLostException {
 		dirLeft = true;
 		turnRight();
 		while (left <= 5)
@@ -355,8 +356,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		turnLeft();
 	}
 
-	public void doDragRace() throws ConnectionLostException,
-			InterruptedException
+	public void doDragRace() throws ConnectionLostException, InterruptedException
 	{
 		while (true && !killed)
 		{
@@ -670,8 +670,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 		}
 	}
 
-	public void turnLeft() throws ConnectionLostException
-	{
+	public void turnLeft() throws ConnectionLostException {
 		turn(-90);
 		if (dx == 0 && dy == 1)
 		{
@@ -726,9 +725,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener
 	{
 		return (dashboard.getAzimuth() + 360) % 360;
 	}
-
-	public void fixPosition() throws ConnectionLostException
-	{
+	
+	public void fixPosition() throws ConnectionLostException, InterruptedException {
 		int front = getWallFront();
 		int right = getWallRight();
 		int left = getWallLeft();
