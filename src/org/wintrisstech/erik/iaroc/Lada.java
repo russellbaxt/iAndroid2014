@@ -401,13 +401,13 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	{
 		int totalDistance = 0;
 		readSensors(Lada.SENSORS_GROUP_ID6);
-		int go = centimeters > 0 ? 250 : -250;
-		driveDirect(go, go);
-		while (totalDistance < centimeters * 10)
+		int go = centimeters > 0 ? 25 : -25;
+		while (totalDistance < Math.abs(centimeters) * 10)
 		{
+			driveDirect(go, go);
 			readSensors(Lada.SENSORS_GROUP_ID6);
 			int dd = getDistance();
-			totalDistance += dd;
+			totalDistance += Math.abs(dd);
 		}
 	}
 	public void mapMazeLeft() throws ConnectionLostException,
@@ -444,7 +444,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 						x += dx;
 						y += dy;
-						move(BLOCK);
+						myRobot.goForward(BLOCK);
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -516,7 +516,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 						x += dx;
 						y += dy;
-						move(BLOCK);
+						myRobot.goForward(BLOCK);
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -576,9 +576,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public void turnRight() throws ConnectionLostException, InterruptedException {
 		sonar.read();
 		turn(90);
-		if(isWallLeft()){
-			move(getWallLeft() - 14);
-		}
 		if (dx == 0 && dy == 1) {
 			dx = 1;
 			dy = 0;
