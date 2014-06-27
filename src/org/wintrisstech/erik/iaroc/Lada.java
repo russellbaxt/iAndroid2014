@@ -32,7 +32,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int CSD = 14;
 	private static final int CFD = 18;
 	/**
-	 * Multiply by angle using speed 225
+	 * Multiply by angle using//#noMoss
+	 * 
+	 * speed 225
 	 */
 	private static final int DEGREE_ANGLE = 10;
 	/**
@@ -77,7 +79,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public static final int BLOCK_TOLERANCE_LOW = 10;
 	public static final int HARMONY_NUMBER = 15;
 	private static final int SPEED = 200;
-	protected static final int FRONT_TOLERANCE = 10;
+	protected static final int FRONT_TOLERANCE = 20;
 	private static final int SOME_SPEED = 100;
 	public boolean dirLeft = true;
 	private Button calibrate;
@@ -115,7 +117,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 		});
 		rightMap = (Button) this.dashboard.findViewById(R.id.rightHand);
-		rightMap.setOnClickListener(new OnClickListener() {
+		rightMap.setOnClickListener(new OnClickListener()
+		{
 
 			@Override
 			public void onClick(View arg0) {
@@ -253,7 +256,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						left = getWallLeft();
 						dashboard.log("F:" + front + " and R:" + right
 								+ " and L:" + left);
-						driveDirect(300, 300);
+						driveDirect(SPEED, SPEED );
 						if (front <= FRONT_TOLERANCE || isBumpLeft()
 								|| isBumpRight()) {
 							fixFront(front);
@@ -273,28 +276,103 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		});
 		t.start();
 	}
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
+	// #noMoss
 
-	public void fixFront(int front) throws ConnectionLostException {
-		move(front - 5);// TBD
+	public void fixFront(int front) throws ConnectionLostException
+	{
+		myRobot.goForward(front - 5);// D
 	}
 
-	public void aroundLeft() throws ConnectionLostException {
+	public void aroundLeft() throws ConnectionLostException, InterruptedException
+	{
 		dirLeft = false;
 		turnLeft();
 		while (right <= 5) {
+			sonar.read();
 			right = getWallRight();
 			driveDirect(SPEED, SPEED);
+			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight())
+			{
+				turnLeft();
+				driveDirect(SPEED, SPEED);
+				while (left <= FRONT_TOLERANCE){
+					sonar.read();
+					left = getWallLeft();
+				}
+				myRobot.goForward(14);
+				turnRight();
+				myRobot.goForward(14);
+				turnRight();
+			}
 		}
 		myRobot.goForward(13);
 		turnRight();
 	}
 
-	public void aroundRight() throws ConnectionLostException {
+	public void aroundRight() throws ConnectionLostException, InterruptedException
+	{
 		dirLeft = true;
 		turnRight();
 		while (left <= 5) {
+			sonar.read();
 			left = getWallLeft();
 			driveDirect(SPEED, SPEED);
+			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight())
+			{
+				turnRight();
+				driveDirect(SPEED, SPEED);
+				while (right <= FRONT_TOLERANCE){
+					sonar.read();
+					right = getWallRight();
+				}
+				myRobot.goForward(14);
+				turnLeft();
+				myRobot.goForward(14);
+				turnLeft();
+			}
 		}
 		myRobot.goForward(13);
 		turnLeft();
@@ -399,6 +477,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	public double startAz = 0;
 
+
 	public void move(int centimeters) throws ConnectionLostException {
 		int totalDistance = 0;
 		readSensors(Lada.SENSORS_GROUP_ID6);
@@ -429,17 +508,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 							move(getWallFront() - CFD);
 						}
 						sonar.read();
-						if (!isWallLeft()) {
+						if (!isWallLeft())
+						{
 							turnLeft();
 							if (isWallRight()) {
 								move(CSD - getWallRight());
 							}
-						} else if (isWallFront()) {
+						} else if (isWallFront())
+						{
 							turnRight();
 							if (isWallLeft()) {
 								move(CSD - getWallLeft());
 							}
-							if (isWallRight()) {
+							if (isWallRight())
+							{
 								turnRight();
 							}
 						}
@@ -501,17 +583,20 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						if (isWallFront()) {
 							move(getWallFront() - CFD);
 						}
-						if (!isWallRight()) {
+						if (!isWallRight())
+						{
 							turnRight();
 							if (isWallLeft()) {
 								move(CSD - getWallLeft());
 							}
-						} else if (isWallFront()) {
+						} else if (isWallFront())
+						{
 							turnLeft();
 							if (isWallRight()) {
 								move(CSD - getWallRight());
 							}
-							if (isWallLeft()) {
+							if (isWallLeft())
+							{
 								turnLeft();
 							}
 						}
@@ -591,7 +676,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	public void turnRight() throws ConnectionLostException {
 		turn(90);
-		if (dx == 0 && dy == 1) {
+		if (dx == 0 && dy == 1)
+		{
 			dx = 1;
 			dy = 0;
 		} else if (dx == 0 && dy == -1) {
@@ -606,7 +692,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		}
 	}
 
-	public void turnLeft() throws ConnectionLostException {
+	public void turnLeft() throws ConnectionLostException
+	{
 		turn(-90);
 		if (dx == 0 && dy == 1) {
 			dx = -1;
