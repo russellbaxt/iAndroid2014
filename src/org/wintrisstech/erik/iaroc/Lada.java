@@ -29,6 +29,7 @@ import android.widget.ToggleButton;
  * @author Erik Simplified "API" class by Phil version 140523A
  */
 public class Lada extends IRobotCreateAdapter implements EventListener {
+	private static final int MAZE_SPEED = 250;
 	private static final int CSD = 14;
 	private static final int CFD = 18;
 	/**
@@ -36,7 +37,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	 * 
 	 * speed 225
 	 */
-	private static final int DEGREE_ANGLE = 10;
+	private static final double DEGREE_ANGLE = 10.6666D;
 	/**
 	 * Centimeters of a block
 	 */
@@ -83,6 +84,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int SOME_SPEED = 100;
 	public boolean dirLeft = true;
 	private Button calibrate;
+	private Button dr2;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -117,8 +119,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 		});
 		rightMap = (Button) this.dashboard.findViewById(R.id.rightHand);
-		rightMap.setOnClickListener(new OnClickListener()
-		{
+		rightMap.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
@@ -166,8 +167,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					public void run() {
 						try {
 							doDragRace();
-						} catch (ConnectionLostException e) {
-						} catch (InterruptedException e) {
+						} catch (Exception e) {
 						}
 					}
 				});
@@ -223,6 +223,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
+		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace2);
+		dr2.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				doDragRace2();
+			}
+
+		});
 		instance = this;
 	}
 
@@ -256,7 +265,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						left = getWallLeft();
 						dashboard.log("F:" + front + " and R:" + right
 								+ " and L:" + left);
-						driveDirect(SPEED, SPEED );
+						driveDirect(SPEED, SPEED);
 						if (front <= FRONT_TOLERANCE || isBumpLeft()
 								|| isBumpRight()) {
 							fixFront(front);
@@ -276,6 +285,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		});
 		t.start();
 	}
+
 	// #noMoss
 	// #noMoss
 	// #noMoss
@@ -321,24 +331,22 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	// #noMoss
 	// #noMoss
 
-	public void fixFront(int front) throws ConnectionLostException
-	{
+	public void fixFront(int front) throws ConnectionLostException {
 		myRobot.goForward(front - 5);// D
 	}
 
-	public void aroundLeft() throws ConnectionLostException, InterruptedException
-	{
+	public void aroundLeft() throws ConnectionLostException,
+			InterruptedException {
 		dirLeft = false;
 		turnLeft();
 		while (right <= 5) {
 			sonar.read();
 			right = getWallRight();
 			driveDirect(SPEED, SPEED);
-			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight())
-			{
+			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight()) {
 				turnLeft();
 				driveDirect(SPEED, SPEED);
-				while (left <= FRONT_TOLERANCE){
+				while (left <= FRONT_TOLERANCE) {
 					sonar.read();
 					left = getWallLeft();
 				}
@@ -352,19 +360,18 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		turnRight();
 	}
 
-	public void aroundRight() throws ConnectionLostException, InterruptedException
-	{
+	public void aroundRight() throws ConnectionLostException,
+			InterruptedException {
 		dirLeft = true;
 		turnRight();
 		while (left <= 5) {
 			sonar.read();
 			left = getWallLeft();
 			driveDirect(SPEED, SPEED);
-			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight())
-			{
+			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight()) {
 				turnRight();
 				driveDirect(SPEED, SPEED);
-				while (right <= FRONT_TOLERANCE){
+				while (right <= FRONT_TOLERANCE) {
 					sonar.read();
 					right = getWallRight();
 				}
@@ -385,6 +392,17 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			straightenDrag();
 		}
 		driveDirect(0, 0);
+	}
+
+	public void doDragRace2() {
+		try {
+			readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+			while (!killed && !(isBumpLeft() || isBumpRight())) {
+				moveBlock(MAX_SPEED);
+				readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+			}
+		} catch (Exception e) {
+		}
 	}
 
 	public void straightenDrag() throws ConnectionLostException,
@@ -443,6 +461,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				dashboard.log(map());
 				y = 4;
 				x = 15;
+				dx = 1;
+				dy = 0;
 				for (int i = 0; i < mapintYX.length; i++) {
 					for (int j = 0; j < mapintYX[i].length; j++) {
 						if (mapintYX[i][j] <= 0) {
@@ -450,13 +470,99 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						}
 					}
 				}
-				int north = mapintYX[y + 1][x];
-				int east = mapintYX[y][x + 1];
-				/*
-				 * while(true && !killed){ dashboard.log(""+readCompass()+"");
-				 * Object lock = new Object(); synchronized(lock){ try {
-				 * lock.wait(500); } catch (InterruptedException e) {} } }
-				 */
+				try {
+					while (!atEnd()) {
+						int north = mapintYX[y + 1][x];
+						int east = mapintYX[y][x + 1];
+						int south = mapintYX[y - 1][x];
+						int west = mapintYX[y][x - 1];
+						int dir = 0;
+						if (dx == 0 && dy == 1) {
+							dir = 0;
+							south = 9;
+						} else if (dx == 1 && dy == 0) {
+							dir = 1;
+							west = 9;
+						} else if (dx == 0 && dy == -1) {
+							dir = 2;
+							north = 9;
+						} else {
+							dir = 3;
+							east = 9;
+						}
+						int least = Math.min(west,
+								Math.min(south, Math.min(north, east)));
+						if (least == north) {
+							switch (dir) {
+							case 0:
+
+								break;
+							case 1:
+
+								break;
+							case 2:
+
+								break;
+							case 3:
+
+								break;
+							}
+						} else if (least == south) {
+							switch (dir) {
+							case 0:
+
+								break;
+							case 1:
+
+								break;
+							case 2:
+
+								break;
+							case 3:
+
+								break;
+							}
+						} else if (least == west) {
+							switch (dir) {
+							case 0:
+
+								break;
+							case 1:
+
+								break;
+							case 2:
+
+								break;
+							case 3:
+
+								break;
+							}
+						} else {
+							switch (dir) {
+							case 0:
+
+								break;
+							case 1:
+
+								break;
+							case 2:
+
+								break;
+							case 3:
+
+								break;
+							}
+						}
+						moveBlock();
+						/*
+						 * while(true && !killed){
+						 * dashboard.log(""+readCompass()+""); Object lock = new
+						 * Object(); synchronized(lock){ try { lock.wait(500); }
+						 * catch (InterruptedException e) {} } }
+						 */
+					}
+				} catch (Exception e) {
+				}
 			}
 
 		});
@@ -476,7 +582,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	public double startAz = 0;
-
 
 	public void move(int centimeters) throws ConnectionLostException {
 		int totalDistance = 0;
@@ -502,32 +607,29 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					boolean done = false;
 					while (!done && !killed) {
 						mapintYX[y][x] += 1;
-						// straighten();
+						straighten();
 						sonar.read();
 						if (isWallFront()) {
 							move(getWallFront() - CFD);
 						}
 						sonar.read();
-						if (!isWallLeft())
-						{
+						if (!isWallLeft()) {
 							turnLeft();
 							if (isWallRight()) {
 								move(CSD - getWallRight());
 							}
-						} else if (isWallFront())
-						{
+						} else if (isWallFront()) {
 							turnRight();
 							if (isWallLeft()) {
 								move(CSD - getWallLeft());
 							}
-							if (isWallRight())
-							{
+							if (isWallRight()) {
 								turnRight();
 							}
 						}
 						x += dx;
 						y += dy;
-						myRobot.goForward(BLOCK);
+						moveBlock();
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -538,6 +640,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				} catch (Exception e) {
 
 				}
+				win();
 			}
 
 		});
@@ -545,20 +648,6 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	}
 
 	private void straighten() throws ConnectionLostException {
-		currentAz = readCompass();
-		double diff = currentAz - preferredAz;
-		dashboard.log(diff + "\t" + currentAz + "\t" + preferredAz);
-		while (Math.abs(diff) >= AZ_TOLERANCE) {
-			if (diff > 0) {
-				driveDirect(30, -30);
-			} else {
-				driveDirect(-30, 30);
-			}
-			currentAz = readCompass();
-			diff = currentAz - preferredAz;
-		}
-		dashboard.log(diff + "-" + currentAz + "-" + preferredAz);
-		driveDirect(0, 0);
 
 	}
 
@@ -583,26 +672,23 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						if (isWallFront()) {
 							move(getWallFront() - CFD);
 						}
-						if (!isWallRight())
-						{
+						if (!isWallRight()) {
 							turnRight();
 							if (isWallLeft()) {
 								move(CSD - getWallLeft());
 							}
-						} else if (isWallFront())
-						{
+						} else if (isWallFront()) {
 							turnLeft();
 							if (isWallRight()) {
 								move(CSD - getWallRight());
 							}
-							if (isWallLeft())
-							{
+							if (isWallLeft()) {
 								turnLeft();
 							}
 						}
 						x += dx;
 						y += dy;
-						myRobot.goForward(BLOCK);
+						moveBlock();
 						// fixPosition();
 						if (atEnd()) {
 							mapintYX[y][x] += 1;
@@ -613,10 +699,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				} catch (Exception e) {
 
 				}
+				win();
 			}
 
 		});
 		t.start();
+	}
+
+	protected void win() {
+		dashboard.speak("I WIN!");
 	}
 
 	private void moveFrontBack() throws ConnectionLostException {
@@ -650,34 +741,37 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	}
 
-	public void turn(int commandAngle) throws ConnectionLostException {
-		int ls = commandAngle > 0 ? 232 : -232;
+	public void turn(int commandAngle, int speed)
+			throws ConnectionLostException {
+		int ls = commandAngle > 0 ? speed : -speed;
 		int rs = -ls;
 		readSensors(Lada.SENSORS_GROUP_ID6);
 		driveDirect(rs, ls);
-		SystemClock.sleep(DEGREE_ANGLE * Math.abs(commandAngle));
+		SystemClock.sleep(Math.round(DEGREE_ANGLE
+				* (double) Math.abs(commandAngle)
+				* ((double) 225 / (double) speed)));
 		driveDirect(0, 0);
 		readSensors(Lada.SENSORS_GROUP_ID6);
 		int angle = getAngle();
-		dashboard.log(""+angle);
-		
-		int diffAngle = commandAngle + angle;
-		dashboard.log(""+diffAngle);
-		int go = diffAngle > 0 ? -SOME_SPEED : SOME_SPEED;
-		driveDirect(go, -go);
-		while (Math.abs(diffAngle) > 0) {
-			readSensors(Lada.SENSORS_GROUP_ID6);
-			int newAngle = getAngle();
-			diffAngle += newAngle;
-			dashboard.log(newAngle+" "+diffAngle);
+		dashboard.log("" + angle);
+
+		commandAngle += angle;
+		if (commandAngle > 1) {
+			turn(commandAngle, 100);
 		}
-		preferredAz = (preferredAz + commandAngle + 360) % 360;
+
+		/*
+		 * int diffAngle = commandAngle + angle; dashboard.log(""+diffAngle);
+		 * int go = commandAngle > 0 ? -speed : speed; driveDirect(go, -go);
+		 * while (Math.abs(commandAngle) > 0) {
+		 * readSensors(Lada.SENSORS_GROUP_ID6); int newAngle = getAngle();
+		 * commandAngle += newAngle; dashboard.log(newAngle+" "+commandAngle); }
+		 */
 	}
 
 	public void turnRight() throws ConnectionLostException {
-		turn(90);
-		if (dx == 0 && dy == 1)
-		{
+		turn(90, 225);
+		if (dx == 0 && dy == 1) {
 			dx = 1;
 			dy = 0;
 		} else if (dx == 0 && dy == -1) {
@@ -692,9 +786,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		}
 	}
 
-	public void turnLeft() throws ConnectionLostException
-	{
-		turn(-90);
+	public void turnLeft() throws ConnectionLostException {
+		turn(-90, 100);
 		if (dx == 0 && dy == 1) {
 			dx = -1;
 			dy = 0;
@@ -758,6 +851,74 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			turnRight();
 			myRobot.goForward(HARMONY_NUMBER - left);
 			turnLeft();
+		}
+	}
+
+	public int goForward(int centimeters, int speed)
+			throws ConnectionLostException {
+		int totalDistance = 0;
+		readSensors(Lada.SENSORS_GROUP_ID6);
+		driveDirect(speed, speed);
+		while (totalDistance < centimeters * 10) {
+			readSensors(Lada.SENSORS_GROUP_ID6);
+			int dd = getDistance();
+			totalDistance += dd;
+			// log("" + totalDistance / 10 + " cm");
+		}
+		driveDirect(0, 0);
+		return totalDistance / 10;
+	}
+
+	public void moveBlock() throws ConnectionLostException,
+			InterruptedException {
+		moveBlock(MAZE_SPEED);
+	}
+
+	void moveBlock(int speed) throws ConnectionLostException,
+			InterruptedException {
+		sonar.read();
+		int distLeft1 = sonar.getLeftDistance();
+		int distRight1 = sonar.getRightDistance();
+		int distDrive = goForward(BLOCK, speed);
+		sonar.read();
+		int distLeft2 = sonar.getLeftDistance();
+		int distRight2 = sonar.getRightDistance();
+		double leftAngle = 0.0D;
+		double rightAngle = 0.0D;
+		dashboard.log("Drive: " + distDrive);
+		if (distLeft1 < BLOCK && distLeft2 < BLOCK) {
+			try {
+				dashboard.log(distLeft1 + ", " + distLeft2);
+				leftAngle = Math
+						.toDegrees(Math
+								.asin(((double) (distLeft1 - distLeft2) / (double) distDrive)));
+				dashboard.log("LA: " + leftAngle);
+			} catch (ArithmeticException ae) {
+
+			}
+		}
+		if (distRight1 < BLOCK && distRight2 < BLOCK) {
+			try {
+				dashboard.log(distRight1 + ", " + distRight2);
+				rightAngle = Math
+						.toDegrees(Math
+								.asin(((double) (distRight2 - distRight1) / (double) distDrive)));
+				dashboard.log("RA: " + rightAngle);
+			} catch (ArithmeticException ae) {
+
+			}
+		}
+		double correctAngle = 0.0D;
+		if (Math.round(leftAngle) != 0 && Math.round(rightAngle) == 0) {
+			correctAngle = leftAngle;
+		} else if (Math.round(rightAngle) != 0 && Math.round(leftAngle) == 0) {
+			correctAngle = rightAngle;
+		} else if (Math.round(rightAngle) != 0 && Math.round(leftAngle) != 0) {
+			correctAngle = (leftAngle + rightAngle) / 2;
+		}
+		if (Math.round(correctAngle) != 0) {
+			dashboard.log("CA: " + correctAngle);
+			turn((int) Math.round(correctAngle), 100);
 		}
 	}
 
