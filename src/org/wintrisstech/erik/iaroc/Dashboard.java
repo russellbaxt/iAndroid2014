@@ -20,6 +20,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -70,6 +73,7 @@ public class Dashboard extends IOIOActivity implements
 	private double azimuth;
 	private double pitch;
 	private double roll;
+	private Button clearLog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -105,7 +109,15 @@ public class Dashboard extends IOIOActivity implements
 		mText = (TextView) findViewById(R.id.text);
 		scroller = (ScrollView) findViewById(R.id.scroller);
 		log(getString(R.string.wait_ioio));
+		clearLog = (Button) findViewById(R.id.clear);
+		clearLog.setOnClickListener(new OnClickListener(){
 
+			@Override
+			public void onClick(View v) {
+				mText.setText("");
+			}
+			
+		});
 		for (Sensor sensor : sensorManager.getSensorList(Sensor.TYPE_ALL)) {
 			log(sensor != null && sensor.getName() != null ? sensor.getName() : "null");
 		}

@@ -98,10 +98,10 @@
             android:text="Calibrate" />
 
         <Button
-            android:id="@+id/button1"
+            android:id="@+id/clear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Clear Log" />
+            android:text="Clear" />
 
     </LinearLayout>
     

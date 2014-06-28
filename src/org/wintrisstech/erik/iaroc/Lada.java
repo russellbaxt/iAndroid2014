@@ -45,7 +45,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	/**
 	 * Olaf!
 	 */
-	private static final int MAX_SPEED = 425;
+	private static final int MAX_SPEED = 500;
 	private static final int CHANGE_SPEED = 415;
 	private static final int SLIDY = 7;
 	private static final int AZ_TOLERANCE = 10;
@@ -235,7 +235,9 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 					@Override
 					public void run() {
-						doDragRace2();						
+						try {
+							doDragRace2();
+						} catch (Exception e) {}						
 					}
 					
 				});
@@ -573,7 +575,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			@Override
 			public void run() {
 				dashboard.log(map());
-				y = 4;
+				y = 5;
 				x = 15;
 				dx = 1;
 				dy = 0;
@@ -879,6 +881,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 	public void turn(int commandAngle, int speed)
 			throws ConnectionLostException {
+		dashboard.log(commandAngle+", "+speed);
 		int ls = commandAngle > 0 ? speed : -speed;
 		int rs = -ls;
 		readSensors(Lada.SENSORS_GROUP_ID6);
@@ -892,9 +895,13 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		dashboard.log("" + angle);
 
 		commandAngle += angle;
+		/**
+		 
 		if (commandAngle > 1) {
 			turn(commandAngle, 100);
 		}
+		
+		*/
 
 		/*
 		 * int diffAngle = commandAngle + angle; dashboard.log(""+diffAngle);
@@ -1059,11 +1066,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		sonar.read();
 		if(getWallLeft() < CSD-TOL){
 			turnRight();
-			move(getWallLeft() - CSD);
+			move(CSD-getWallLeft());
 			turnLeft();
 		} else if(getWallRight() < CSD-TOL){
 			turnLeft();
-			move(getWallRight()-CSD);
+			move(CSD-getWallRight());
 			turnRight();
 		}
 	}

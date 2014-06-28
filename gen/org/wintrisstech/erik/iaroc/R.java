@@ -15,8 +15,8 @@ public final class R {
         public static final int ic_launcher_irobot=0x7f020001;
     }
     public static final class id {
-        public static final int button1=0x7f05000c;
         public static final int calibrate=0x7f05000b;
+        public static final int clear=0x7f05000c;
         public static final int dragRace=0x7f050005;
         public static final int dragRace2=0x7f050006;
         public static final int dragRace3=0x7f050007;
