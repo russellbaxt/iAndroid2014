@@ -226,16 +226,24 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
-		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace3);
+		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace2);
 		dr2.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-				doDragRace3();
-			}
+				Thread t = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+						doDragRace2();						
+					}
+					
+				});
+				t.start();
+				}
 
 		});
-		dr3 = (Button) this.dashboard.findViewById(R.id.dragRace2);
+		dr3 = (Button) this.dashboard.findViewById(R.id.dragRace3);
 		dr3.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -244,8 +252,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 					@Override
 					public void run() {
-						// TODO Do your stuff here
-						
+						doDragRace3();						
 					}
 					
 				});
@@ -428,6 +435,13 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			straightenDrag();
 		}
 		driveDirect(0, 0);
+	}
+
+	public void doDragRace2() throws ConnectionLostException,
+			InterruptedException {
+		while (true && !killed) {
+			moveBlock(MAX_SPEED);
+		}
 	}
 
 	public void doDragRace3() {
