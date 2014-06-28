@@ -226,16 +226,24 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
-		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace3);
+		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace2);
 		dr2.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View arg0) {
-				doDragRace3();
-			}
+				Thread t = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+						doDragRace2();						
+					}
+					
+				});
+				t.start();
+				}
 
 		});
-		dr3 = (Button) this.dashboard.findViewById(R.id.dragRace2);
+		dr3 = (Button) this.dashboard.findViewById(R.id.dragRace3);
 		dr3.setOnClickListener(new OnClickListener(){
 
 			@Override
@@ -244,8 +252,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 					@Override
 					public void run() {
-						// TODO Do your stuff here
-						
+						doDragRace3();						
 					}
 					
 				});
@@ -430,11 +437,82 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		driveDirect(0, 0);
 	}
 
+	public void doDragRace2() throws ConnectionLostException,
+			InterruptedException {
+		while (true && !killed) {
+			moveBlock(MAX_SPEED);
+		}
+	}
+
 	public void doDragRace3() {
 		try {
 			readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
 			while (!killed && !(isBumpLeft() || isBumpRight())) {
-				moveBlock(MAX_SPEED);
+				sonar.read();
+				int distLeft1 = sonar.getLeftDistance();
+				int distRight1 = sonar.getRightDistance();
+				int totalDistance = 0;
+				readSensors(Lada.SENSORS_GROUP_ID6);
+				driveDirect(MAX_SPEED,MAX_SPEED);
+				while (totalDistance < 100 * 10){
+					readSensors(Lada.SENSORS_GROUP_ID6);
+					int dd = getDistance();
+					totalDistance += dd;
+					// log("" + totalDistance / 10 + " cm");
+				}
+				sonar.read();
+				int distLeft2 = sonar.getLeftDistance();
+				int distRight2 = sonar.getRightDistance();
+				double leftAngle = 0.0D;
+				double rightAngle = 0.0D;
+				dashboard.log("Drive: " + totalDistance);
+				if (distLeft1 < BLOCK && distLeft2 < BLOCK) {
+					try {
+						dashboard.log(distLeft1 + ", " + distLeft2);
+						leftAngle = Math
+								.toDegrees(Math
+										.asin(((double) (distLeft1 - distLeft2) / (double) totalDistance)));
+						dashboard.log("LA: " + leftAngle);
+					} catch (ArithmeticException ae) {
+
+					}
+				}
+				if (distRight1 < BLOCK && distRight2 < BLOCK) {
+					try {
+						dashboard.log(distRight1 + ", " + distRight2);
+						rightAngle = Math
+								.toDegrees(Math
+										.asin(((double) (distRight2 - distRight1) / (double) totalDistance)));
+						dashboard.log("RA: " + rightAngle);
+					} catch (ArithmeticException ae) {
+
+					}
+				}
+				double correctAngle = 0.0D;
+				if (Math.round(leftAngle) != 0 && Math.round(rightAngle) == 0) {
+					correctAngle = leftAngle;
+				} else if (Math.round(rightAngle) != 0 && Math.round(leftAngle) == 0) {
+					correctAngle = rightAngle;
+				} else if (Math.round(rightAngle) != 0 && Math.round(leftAngle) != 0) {
+					correctAngle = (leftAngle + rightAngle) / 2;
+				}
+				readSensors(Lada.SENSORS_GROUP_ID6);
+				while (Math.abs(Math.round(correctAngle)) > 0) {
+					dashboard.log("CA: " + correctAngle);
+					if (correctAngle > 0){
+						ls = MAX_SPEED;
+						rs = MAX_SPEED - 50;
+						dashboard.log("---------------RIGHT!--------------");
+					} else {
+						ls = MAX_SPEED - 50;
+						rs = MAX_SPEED;
+						dashboard.log("---------------LEFT!--------------");
+					}
+					driveDirect(rs, ls);
+					readSensors(Lada.SENSORS_GROUP_ID6);
+					int angle = getAngle();
+					correctAngle+=angle;
+				}
 				readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
 			}
 		} catch (Exception e) {
