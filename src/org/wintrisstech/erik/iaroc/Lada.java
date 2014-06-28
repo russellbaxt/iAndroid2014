@@ -80,8 +80,8 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public static final int BLOCK_TOLERANCE_LOW = 10;
 	public static final int HARMONY_NUMBER = 15;
 	private static final int SPEED = 200;
-	protected static final int FRONT_TOLERANCE = 20;
-	private static final int SOME_SPEED = 100;
+	protected static final int FRONT_TOLERANCE = 25;
+	private static final int TOO_CLOSE = 5;
 	public boolean dirLeft = true;
 	private Button calibrate;
 	private Button dr2;
@@ -164,10 +164,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				Thread t = new Thread(new Runnable() {
 
 					@Override
-					public void run() {
-						try {
+					public void run()
+					{
+						try
+						{
 							doDragRace();
-						} catch (Exception e) {
+						} catch (ConnectionLostException e)
+						{
+						} catch (InterruptedException e)
+						{
 						}
 					}
 				});
@@ -257,9 +262,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					boolean done = false;
 					boolean dirLeft = true;
 					dashboard.log("start");
-					while (!done) {
+					while (getInfraredByte() == 255)
+					{
 						sonar.read();
 						readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
+						readSensors(SENSORS_INFRARED_BYTE);
 						front = getWallFront();
 						right = getWallRight();
 						left = getWallLeft();
@@ -280,6 +287,14 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					}
 				} catch (Exception e) {
 
+				}
+				try
+				{
+					dashboard.speak("Yahoo!");
+					dock();
+				} catch (ConnectionLostException e)
+				{
+					e.printStackTrace();
 				}
 			}
 		});
@@ -331,15 +346,21 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	// #noMoss
 	// #noMoss
 
+	public void dock() throws ConnectionLostException
+	{
+		this.demo(DEMO_COVER_AND_DOCK);
+	}
+
 	public void fixFront(int front) throws ConnectionLostException {
-		myRobot.goForward(front - 5);// D
+		myRobot.goBackward(TOO_CLOSE - front);
 	}
 
 	public void aroundLeft() throws ConnectionLostException,
 			InterruptedException {
 		dirLeft = false;
 		turnLeft();
-		while (right <= 5) {
+		while (right <= FRONT_TOLERANCE)
+		{
 			sonar.read();
 			right = getWallRight();
 			driveDirect(SPEED, SPEED);
@@ -350,9 +371,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					sonar.read();
 					left = getWallLeft();
 				}
-				myRobot.goForward(14);
+				dashboard.speak("YO LOW!");
+				myRobot.goForward(60);
 				turnRight();
-				myRobot.goForward(14);
+				myRobot.goForward(60);
 				turnRight();
 			}
 		}
@@ -364,20 +386,24 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			InterruptedException {
 		dirLeft = true;
 		turnRight();
-		while (left <= 5) {
+		while (left <= FRONT_TOLERANCE)
+		{
+			sonar.read();
 			sonar.read();
 			left = getWallLeft();
 			driveDirect(SPEED, SPEED);
 			if (front <= FRONT_TOLERANCE || isBumpLeft() || isBumpRight()) {
+				dashboard.log("furthurer");
 				turnRight();
 				driveDirect(SPEED, SPEED);
 				while (right <= FRONT_TOLERANCE) {
 					sonar.read();
 					right = getWallRight();
 				}
-				myRobot.goForward(14);
+				dashboard.speak("YO LOW!");
+				myRobot.goForward(60);
 				turnLeft();
-				myRobot.goForward(14);
+				myRobot.goForward(60);
 				turnLeft();
 			}
 		}
@@ -647,7 +673,26 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		t.start();
 	}
 
-	private void straighten() throws ConnectionLostException {
+	private void straighten() throws ConnectionLostException
+	{
+
+		currentAz = readCompass();
+		double diff = currentAz - preferredAz;
+		dashboard.log(diff + "\t" + currentAz + "\t" + preferredAz);
+		while (Math.abs(diff) >= AZ_TOLERANCE)
+		{
+			if (diff > 0)
+			{
+				driveDirect(30, -30);
+			} else
+			{
+				driveDirect(-30, 30);
+			}
+			currentAz = readCompass();
+			diff = currentAz - preferredAz;
+		}
+		dashboard.log(diff + "-" + currentAz + "-" + preferredAz);
+		driveDirect(0, 0);
 
 	}
 
