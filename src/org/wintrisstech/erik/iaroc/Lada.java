@@ -979,10 +979,14 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			turn((int) Math.round(correctAngle), 100);
 		}
 		sonar.read();
-		if(getWallLeft() < CSD){
+		if(getWallLeft() < CSD-TOL){
 			turnRight();
 			move(getWallLeft() - CSD);
 			turnLeft();
+		} else if(getWallRight() < CSD-TOL){
+			turnLeft();
+			move(getWallRight()-CSD);
+			turnRight();
 		}
 	}
 

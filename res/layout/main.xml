@@ -97,6 +97,12 @@
             android:layout_height="wrap_content"
             android:text="Calibrate" />
 
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Clear Log" />
+
     </LinearLayout>
     
     <ScrollView android:id="@+id/scroller"
