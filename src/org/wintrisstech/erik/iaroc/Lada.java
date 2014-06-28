@@ -47,17 +47,17 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	 */
 	private static final int MAX_SPEED = 425;
 	private static final int CHANGE_SPEED = 415;
-	private static final int SLIDY = 5;
+	private static final int SLIDY = 7;
 	private static final int AZ_TOLERANCE = 10;
 	public final Dashboard dashboard;
 	public UltraSonicSensors sonar;
 	private Robot myRobot;
 	public static Lada instance;
 	public int x = 15;
-	public int y = 4;
+	public int y = 5;
 	public int dx = 1;
 	public int dy = 0;
-	public int[][] mapintYX = new int[9][29];
+	public int[][] mapintYX = new int[11][29];
 	public Button leftMap;
 	public Button rightMap;
 	public Button solveMap;
@@ -82,6 +82,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	private static final int SPEED = 200;
 	protected static final int FRONT_TOLERANCE = 25;
 	private static final int TOO_CLOSE = 5;
+	private static final long TOL = 3L;
 	public boolean dirLeft = true;
 	private Button calibrate;
 	private Button dr2;
@@ -164,15 +165,11 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				Thread t = new Thread(new Runnable() {
 
 					@Override
-					public void run()
-					{
-						try
-						{
+					public void run() {
+						try {
 							doDragRace();
-						} catch (ConnectionLostException e)
-						{
-						} catch (InterruptedException e)
-						{
+						} catch (ConnectionLostException e) {
+						} catch (InterruptedException e) {
 						}
 					}
 				});
@@ -228,7 +225,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			}
 
 		});
-		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace2);
+		dr2 = (Button) this.dashboard.findViewById(R.id.dragRace3);
 		dr2.setOnClickListener(new OnClickListener() {
 
 			@Override
@@ -262,8 +259,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					boolean done = false;
 					boolean dirLeft = true;
 					dashboard.log("start");
-					while (getInfraredByte() == 255)
-					{
+					while (getInfraredByte() == 255) {
 						sonar.read();
 						readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
 						readSensors(SENSORS_INFRARED_BYTE);
@@ -288,12 +284,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				} catch (Exception e) {
 
 				}
-				try
-				{
+				try {
 					dashboard.speak("Yahoo!");
 					dock();
-				} catch (ConnectionLostException e)
-				{
+				} catch (ConnectionLostException e) {
 					e.printStackTrace();
 				}
 			}
@@ -346,8 +340,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	// #noMoss
 	// #noMoss
 
-	public void dock() throws ConnectionLostException
-	{
+	public void dock() throws ConnectionLostException {
 		this.demo(DEMO_COVER_AND_DOCK);
 	}
 
@@ -359,8 +352,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			InterruptedException {
 		dirLeft = false;
 		turnLeft();
-		while (right <= FRONT_TOLERANCE)
-		{
+		while (right <= FRONT_TOLERANCE) {
 			sonar.read();
 			right = getWallRight();
 			driveDirect(SPEED, SPEED);
@@ -386,8 +378,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			InterruptedException {
 		dirLeft = true;
 		turnRight();
-		while (left <= FRONT_TOLERANCE)
-		{
+		while (left <= FRONT_TOLERANCE) {
 			sonar.read();
 			sonar.read();
 			left = getWallLeft();
@@ -588,13 +579,13 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 								break;
 							case 1:
-
+								turnLeft();
 								break;
 							case 2:
 
 								break;
 							case 3:
-
+								turnRight();
 								break;
 							}
 						} else if (least == south) {
@@ -603,25 +594,25 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 								break;
 							case 1:
-
+								turnRight();
 								break;
 							case 2:
 
 								break;
 							case 3:
-
+								turnLeft();
 								break;
 							}
 						} else if (least == west) {
 							switch (dir) {
 							case 0:
-
+								turnRight();
 								break;
 							case 1:
 
 								break;
 							case 2:
-
+								turnLeft();
 								break;
 							case 3:
 
@@ -630,13 +621,13 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						} else {
 							switch (dir) {
 							case 0:
-
+								turnRight();
 								break;
 							case 1:
 
 								break;
 							case 2:
-
+								turnLeft();
 								break;
 							case 3:
 
@@ -651,6 +642,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 						 * catch (InterruptedException e) {} } }
 						 */
 					}
+					demo(DEMO_COVER_AND_DOCK);
 				} catch (Exception e) {
 				}
 			}
@@ -692,12 +684,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 			@Override
 			public void run() {
 				try {
-					startAz = readCompass();
-					preferredAz = startAz;
 					boolean done = false;
 					while (!done && !killed) {
 						mapintYX[y][x] += 1;
-						straighten();
+						// straighten();
 						sonar.read();
 						if (isWallFront()) {
 							move(getWallFront() - CFD);
@@ -730,6 +720,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				} catch (Exception e) {
 
 				}
+				try {
+					demo(DEMO_COVER_AND_DOCK);
+				} catch (ConnectionLostException e) {
+				}
 				win();
 			}
 
@@ -737,19 +731,15 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		t.start();
 	}
 
-	private void straighten() throws ConnectionLostException
-	{
+	private void straighten() throws ConnectionLostException {
 
 		currentAz = readCompass();
 		double diff = currentAz - preferredAz;
 		dashboard.log(diff + "\t" + currentAz + "\t" + preferredAz);
-		while (Math.abs(diff) >= AZ_TOLERANCE)
-		{
-			if (diff > 0)
-			{
+		while (Math.abs(diff) >= AZ_TOLERANCE) {
+			if (diff > 0) {
 				driveDirect(30, -30);
-			} else
-			{
+			} else {
 				driveDirect(-30, 30);
 			}
 			currentAz = readCompass();
@@ -807,6 +797,10 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 					mapped = true;
 				} catch (Exception e) {
 
+				}
+				try {
+					demo(DEMO_COVER_AND_DOCK);
+				} catch (Exception e) {
 				}
 				win();
 			}
@@ -983,7 +977,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		moveBlock(MAZE_SPEED);
 	}
 
-	void moveBlock(int speed) throws ConnectionLostException,
+	public void moveBlock(int speed) throws ConnectionLostException,
 			InterruptedException {
 		sonar.read();
 		int distLeft1 = sonar.getLeftDistance();
@@ -1000,7 +994,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				dashboard.log(distLeft1 + ", " + distLeft2);
 				leftAngle = Math
 						.toDegrees(Math
-								.asin(((double) (distLeft1 - distLeft2) / (double) distDrive)));
+								.atan(((double) (distLeft1 - distLeft2) / (double) distDrive)));
 				dashboard.log("LA: " + leftAngle);
 			} catch (ArithmeticException ae) {
 
@@ -1011,7 +1005,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 				dashboard.log(distRight1 + ", " + distRight2);
 				rightAngle = Math
 						.toDegrees(Math
-								.asin(((double) (distRight2 - distRight1) / (double) distDrive)));
+								.atan(((double) (distRight2 - distRight1) / (double) distDrive)));
 				dashboard.log("RA: " + rightAngle);
 			} catch (ArithmeticException ae) {
 
@@ -1025,7 +1019,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		} else if (Math.round(rightAngle) != 0 && Math.round(leftAngle) != 0) {
 			correctAngle = (leftAngle + rightAngle) / 2;
 		}
-		if (Math.round(correctAngle) != 0) {
+		if (Math.round(correctAngle) < TOL) {
 			dashboard.log("CA: " + correctAngle);
 			turn((int) Math.round(correctAngle), 100);
 		}

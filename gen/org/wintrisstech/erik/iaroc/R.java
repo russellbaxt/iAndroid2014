@@ -17,7 +17,7 @@ public final class R {
     public static final class id {
         public static final int calibrate=0x7f05000a;
         public static final int dragRace=0x7f050005;
-        public static final int dragRace2=0x7f050006;
+        public static final int dragRace3=0x7f050006;
         public static final int goldRush=0x7f050007;
         public static final int killProcess=0x7f050004;
         public static final int leftHand=0x7f050001;
