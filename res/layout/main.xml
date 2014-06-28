@@ -56,6 +56,12 @@
             android:text="Drag Race" />
 
         <Button
+            android:id="@+id/dragRace2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DR2" />
+
+        <Button
             android:id="@+id/dragRace3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
