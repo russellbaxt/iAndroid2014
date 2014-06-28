@@ -86,6 +86,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 	public boolean dirLeft = true;
 	private Button calibrate;
 	private Button dr2;
+	private Button dr3;
 
 	/**
 	 * Constructs a Lada, an amazing machine!
@@ -230,9 +231,27 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 
 			@Override
 			public void onClick(View arg0) {
-				doDragRace2();
+				doDragRace3();
 			}
 
+		});
+		dr3 = (Button) this.dashboard.findViewById(R.id.dragRace2);
+		dr3.setOnClickListener(new OnClickListener(){
+
+			@Override
+			public void onClick(View v) {
+				Thread t = new Thread(new Runnable(){
+
+					@Override
+					public void run() {
+						// TODO Do your stuff here
+						
+					}
+					
+				});
+				t.start();
+			}
+			
 		});
 		instance = this;
 	}
@@ -411,7 +430,7 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		driveDirect(0, 0);
 	}
 
-	public void doDragRace2() {
+	public void doDragRace3() {
 		try {
 			readSensors(SENSORS_BUMPS_AND_WHEEL_DROPS);
 			while (!killed && !(isBumpLeft() || isBumpRight())) {
@@ -958,6 +977,12 @@ public class Lada extends IRobotCreateAdapter implements EventListener {
 		if (Math.round(correctAngle) < TOL) {
 			dashboard.log("CA: " + correctAngle);
 			turn((int) Math.round(correctAngle), 100);
+		}
+		sonar.read();
+		if(getWallLeft() < CSD){
+			turnRight();
+			move(getWallLeft() - CSD);
+			turnLeft();
 		}
 	}
 
